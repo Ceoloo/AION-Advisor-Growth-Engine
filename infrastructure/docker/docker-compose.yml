@@ -1,0 +1,29 @@
+# Local development stack. For a full Supabase experience prefer the Supabase
+# CLI (`supabase start`); this compose file provides a plain Postgres for teams
+# that want a minimal local database to run the migrations against.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aion-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '54322:5432'
+    volumes:
+      - aion-pgdata:/var/lib/postgresql/data
+      # An auth shim (emulating Supabase's auth.uid()) runs first, then the
+      # migrations, in filename order, on first boot. For a real Supabase-parity
+      # local stack use the Supabase CLI (`supabase start`) instead.
+      - ./init/00_auth_shim.sql:/docker-entrypoint-initdb.d/00_auth_shim.sql:ro
+      - ../migrations:/docker-entrypoint-initdb.d/migrations:ro
+      - ./init/99_apply_migrations.sh:/docker-entrypoint-initdb.d/99_apply_migrations.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  aion-pgdata:

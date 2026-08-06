@@ -1,0 +1,13 @@
+{
+  "key": "renewal",
+  "name": "Renewal Workflow",
+  "description": "Notify advisor, invite review, review policy, find cross-sell, book meeting.",
+  "trigger": "renewal.approaching",
+  "steps": [
+    { "id": "notify", "action": "notify_advisor", "label": "Notify Advisor" },
+    { "id": "invite", "action": "send_client_review_invitation", "label": "Send Client Review Invitation" },
+    { "id": "review", "action": "review_policy", "label": "Review Policy" },
+    { "id": "cross_sell", "action": "identify_cross_sell", "label": "Identify Cross-Sell Opportunities" },
+    { "id": "book", "action": "book_renewal_meeting", "label": "Book Renewal Meeting" }
+  ]
+}

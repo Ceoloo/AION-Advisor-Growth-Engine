@@ -1,0 +1,43 @@
+{
+  "name": "@aion/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "clean": "rm -rf .next dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@aion/ai": "workspace:*",
+    "@aion/analytics": "workspace:*",
+    "@aion/auth": "workspace:*",
+    "@aion/compliance": "workspace:*",
+    "@aion/database": "workspace:*",
+    "@aion/ghl": "workspace:*",
+    "@aion/integrations": "workspace:*",
+    "@aion/shared": "workspace:*",
+    "@aion/types": "workspace:*",
+    "@aion/ui": "workspace:*",
+    "@aion/workflows": "workspace:*",
+    "next": "^15.1.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "@aion/config": "workspace:*"
+  }
+}

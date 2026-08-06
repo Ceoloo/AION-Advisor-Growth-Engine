@@ -1,0 +1,12 @@
+{
+  "key": "referral",
+  "name": "Referral Workflow",
+  "description": "On a client milestone, request review + referral, track, and reward.",
+  "trigger": "client.milestone",
+  "steps": [
+    { "id": "review", "action": "request_review", "label": "Request Review" },
+    { "id": "referral", "action": "request_referral", "label": "Request Referral" },
+    { "id": "track", "action": "track_referral_source", "label": "Track Referral Source" },
+    { "id": "reward", "action": "reward_referrer", "label": "Reward or Thank Referrer" }
+  ]
+}

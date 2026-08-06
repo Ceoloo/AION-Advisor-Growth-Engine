@@ -1,0 +1,12 @@
+{
+  "key": "no_show",
+  "name": "No-Show Workflow",
+  "description": "Reschedule, task the advisor, retry, and re-engage.",
+  "trigger": "appointment.missed",
+  "steps": [
+    { "id": "reschedule", "action": "send_reschedule_message", "label": "Send Reschedule Message" },
+    { "id": "task", "action": "create_advisor_task", "label": "Create Advisor Task" },
+    { "id": "retry", "action": "schedule_retry", "label": "Retry After 24 Hours", "config": { "delayHours": 24 } },
+    { "id": "reengage", "action": "start_reengagement", "label": "Start Re-Engagement Sequence" }
+  ]
+}

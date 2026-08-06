@@ -1,0 +1,15 @@
+{
+  "key": "post_appointment",
+  "name": "Post-Appointment Workflow",
+  "description": "Capture outcome, summarize, advance pipeline, follow up, request docs.",
+  "trigger": "appointment.completed",
+  "steps": [
+    { "id": "outcome", "action": "collect_outcome", "label": "Collect Outcome" },
+    { "id": "summary", "action": "generate_summary", "label": "Generate Summary" },
+    { "id": "advance", "action": "update_pipeline_stage", "label": "Update Pipeline Stage" },
+    { "id": "tasks", "action": "create_follow_up_tasks", "label": "Create Follow-Up Tasks" },
+    { "id": "follow_up", "action": "send_follow_up_message", "label": "Send Follow-Up Message", "requiresApproval": true },
+    { "id": "documents", "action": "request_documents", "label": "Request Documents" },
+    { "id": "application", "action": "start_application_workflow", "label": "Start Application Workflow" }
+  ]
+}

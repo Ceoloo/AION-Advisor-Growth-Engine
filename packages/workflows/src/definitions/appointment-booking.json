@@ -1,0 +1,14 @@
+{
+  "key": "appointment_booking",
+  "name": "Appointment Booking Workflow",
+  "description": "Confirm, share details, collect intake, prepare advisor, and remind.",
+  "trigger": "appointment.booked",
+  "steps": [
+    { "id": "confirm", "action": "confirm_appointment", "label": "Confirm Appointment" },
+    { "id": "calendar", "action": "send_calendar_details", "label": "Send Calendar Details" },
+    { "id": "intake", "action": "send_intake_questionnaire", "label": "Send Intake Questionnaire" },
+    { "id": "prep", "action": "generate_advisor_brief", "label": "Generate Advisor Prep Brief" },
+    { "id": "reminder_24h", "action": "schedule_reminder", "label": "Send Reminder 24 Hours Before", "config": { "offsetHours": -24 } },
+    { "id": "reminder_1h", "action": "schedule_reminder", "label": "Send Reminder 1 Hour Before", "config": { "offsetHours": -1 } }
+  ]
+}
