@@ -3,10 +3,14 @@ export interface NavItem {
   href: string;
   label: string;
   icon: string;
-  group: 'Overview' | 'Sales' | 'Engagement' | 'Operations';
+  group: 'Pilot' | 'Overview' | 'Sales' | 'Engagement' | 'Operations';
 }
 
 export const NAV_ITEMS: NavItem[] = [
+  { href: '/presentation', label: 'Presentation', icon: '🎬', group: 'Pilot' },
+  { href: '/demo-control', label: 'Demo Control', icon: '🎛️', group: 'Pilot' },
+  { href: '/presentation/pricing', label: 'Pricing', icon: '💰', group: 'Pilot' },
+  { href: '/presentation/checklist', label: 'Approval Checklist', icon: '✅', group: 'Pilot' },
   { href: '/dashboard', label: 'Dashboard', icon: '📊', group: 'Overview' },
   { href: '/analytics', label: 'Analytics', icon: '📈', group: 'Overview' },
   { href: '/leads', label: 'Leads', icon: '🎯', group: 'Sales' },
@@ -25,4 +29,4 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: '⚙️', group: 'Operations' },
 ];
 
-export const NAV_GROUPS = ['Overview', 'Sales', 'Engagement', 'Operations'] as const;
+export const NAV_GROUPS = ['Pilot', 'Overview', 'Sales', 'Engagement', 'Operations'] as const;

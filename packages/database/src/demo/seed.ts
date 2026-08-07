@@ -132,13 +132,22 @@ function buildOrg(spec: OrgSpec): DemoOrg {
     isDemo: spec.isDemo,
   };
 
-  // --- Advisor profiles + memberships (3 advisors + 1 admin) -----------------
-  const advisorSpecs: { name: string; role: Role }[] = [
-    { name: 'Alex Morgan', role: 'agency_administrator' },
-    { name: 'Jordan Blake', role: 'financial_advisor' },
-    { name: 'Taylor Reed', role: 'insurance_agent' },
-    { name: 'Casey Vaughn', role: 'appointment_setter' },
-  ];
+  // --- Advisor profiles + memberships ----------------------------------------
+  // The primary (Ben Peretz) tenant is a solo financial-protection practice:
+  // Ben is the owner/advisor. Support roles round out the team for the demo.
+  const isBenPeretz = spec.slug === 'ben-peretz';
+  const advisorSpecs: { name: string; role: Role }[] = isBenPeretz
+    ? [
+        { name: 'Ben Peretz', role: 'agency_administrator' },
+        { name: 'Dana Cohen', role: 'appointment_setter' },
+        { name: 'Rachel Adler', role: 'client_success_representative' },
+      ]
+    : [
+        { name: 'Alex Morgan', role: 'agency_administrator' },
+        { name: 'Jordan Blake', role: 'financial_advisor' },
+        { name: 'Taylor Reed', role: 'insurance_agent' },
+        { name: 'Casey Vaughn', role: 'appointment_setter' },
+      ];
   const profiles: Profile[] = advisorSpecs.map((a, i) => ({
     id: `${organizationId}_p${i}`,
     authUserId: `auth_${spec.slug}_${i}`,
@@ -156,7 +165,10 @@ function buildOrg(spec: OrgSpec): DemoOrg {
     createdAt: iso(120),
     updatedAt: iso(1),
   }));
-  const advisorIds = profiles.filter((_, i) => i >= 1 && i <= 2).map((p) => p.id);
+  // Ben Peretz is a solo advisor practice — every lead routes to him (p0).
+  const advisorIds = isBenPeretz
+    ? [profiles[0]!.id]
+    : profiles.filter((_, i) => i >= 1 && i <= 2).map((p) => p.id);
 
   // --- Pipelines + stages (both templates) -----------------------------------
   const pipelines: Pipeline[] = [];
@@ -442,6 +454,26 @@ function buildOrg(spec: OrgSpec): DemoOrg {
     { id: `${organizationId}_cmp4`, organizationId, name: 'Email Nurture — Q3', channel: 'email', spend: 300, leadsGenerated: Math.round(spec.leadCount * 0.1) },
   ];
 
+  // --- Inject the scripted Marcus Johnson pilot journey (Ben Peretz only) -----
+  if (isBenPeretz) {
+    const faPipeline = pipelines.find((p) => p.vertical === 'financial_advisor')!;
+    // "Appointment Booked" is index 5 of the Financial Advisor pipeline template.
+    const apptStage = stages.find((s) => s.pipelineId === faPipeline.id && s.name === 'Appointment Booked')!;
+    const m = buildMarcusJohnson(organizationId, profiles[0]!.id, faPipeline.id, apptStage.id);
+    // Prepend so Marcus is the first, front-and-center lead for the demo.
+    contacts.unshift(m.contact);
+    leads.unshift(m.lead);
+    leadScores.unshift(m.score);
+    qualificationSessions.unshift(m.qualification);
+    consents.unshift(...m.consents);
+    opportunities.unshift(m.opportunity);
+    appointments.unshift(m.appointment);
+    messages.unshift(...m.messages);
+    notes.unshift(m.note);
+    tasks.unshift(m.task);
+    timeline.unshift(...m.timeline);
+  }
+
   return {
     organization,
     settings: makeSettings(organizationId),
@@ -466,13 +498,257 @@ function buildOrg(spec: OrgSpec): DemoOrg {
   };
 }
 
+// --- Marcus Johnson — the scripted pilot presentation journey ----------------
+
+/** Stable ids for the scripted Marcus Johnson demo lead (Ben Peretz tenant). */
+export const MARCUS_LEAD_ID = 'org_ben-peretz_marcus';
+export const MARCUS_CONTACT_ID = 'org_ben-peretz_marcus_contact';
+
+/** The exact qualification answers Marcus submits in the Financial Protection Checkup. */
+export const MARCUS_ANSWERS: Record<string, unknown> = {
+  age_range: '50-59',
+  employment_status: 'Employed',
+  household_income: '$100k-$199k',
+  investable_assets: '$1M-$4.9M',
+  retirement_timeline: '5-10 years',
+  financial_concerns: 'Protecting my family’s income and leaving a clean legacy',
+  existing_advisor: false,
+  insurance_ownership: false,
+  estate_planning_needs: true,
+  college_planning_needs: true,
+  debt_concerns: false,
+  tax_planning_interest: true,
+  appointment_urgency: 'ASAP',
+  preferred_channel: 'Phone',
+};
+
+/** Expected tags applied to Marcus on qualification (shown in the journey). */
+export const MARCUS_TAGS = [
+  'High Priority',
+  'Financial Protection',
+  'Retirement Income',
+  'Estate Planning',
+  'Appointment Ready',
+];
+
+interface MarcusBundle {
+  contact: Contact;
+  lead: Lead;
+  score: LeadScore;
+  qualification: LeadQualificationSession;
+  consents: ConsentRecord[];
+  opportunity: Opportunity;
+  appointment: Appointment;
+  messages: Message[];
+  note: Note;
+  task: Task;
+  timeline: TimelineEvent[];
+}
+
+/**
+ * Build the scripted Marcus Johnson journey. The score is computed by the same
+ * deterministic engine as every other lead (no hard-coding) and is guaranteed —
+ * and asserted in tests — to land in the 80–88 high-priority band.
+ */
+function buildMarcusJohnson(
+  organizationId: string,
+  advisorId: string,
+  faPipelineId: string,
+  appointmentBookedStageId: string,
+): MarcusBundle {
+  const template = templateForVertical('financial_advisor');
+  const signals = extractSignals('financial_advisor', MARCUS_ANSWERS, template.questions.length);
+  const score = computeScore(signals);
+
+  const result: QualificationResult = {
+    qualificationStatus: 'high_priority',
+    intentScore: Math.round(signals.intent ?? 90),
+    urgencyScore: Math.round(signals.urgency ?? 100),
+    productInterests: ['Income protection', 'Estate planning', 'Retirement income planning'],
+    needsSummary:
+      'Marcus (54) is the primary earner for a household of four. He wants to protect his ' +
+      'family’s income against loss, put an estate plan in place, and coordinate college and ' +
+      'retirement funding. No current advisor. Ready to meet this week. Advisor review required ' +
+      'before any recommendation.',
+    objections: ['Wants to understand fees clearly'],
+    missingInformation: ['Existing coverage amounts'],
+    recommendedNextAction: 'Call within the hour and confirm the Financial Protection Review appointment.',
+    appointmentReady: true,
+  };
+
+  const contact: Contact = {
+    id: MARCUS_CONTACT_ID,
+    organizationId,
+    firstName: 'Marcus',
+    lastName: 'Johnson',
+    email: 'marcus.johnson@example.com',
+    phone: '5551180424',
+    state: 'NJ',
+    timezone: 'America/New_York',
+    source: 'web_form',
+    createdAt: iso(2, 9),
+    updatedAt: iso(0, 14),
+  };
+
+  const lead: Lead = {
+    id: MARCUS_LEAD_ID,
+    organizationId,
+    contactId: MARCUS_CONTACT_ID,
+    vertical: 'financial_advisor',
+    status: 'appointment_set',
+    qualificationStatus: 'high_priority',
+    score: score.total,
+    scoreBand: score.band,
+    assignedAdvisorId: advisorId,
+    pipelineStageId: appointmentBookedStageId,
+    source: 'web_form',
+    lastActivityAt: iso(0, 14),
+    createdAt: iso(2, 9),
+    updatedAt: iso(0, 14),
+  };
+
+  const leadScore: LeadScore = {
+    id: `${MARCUS_LEAD_ID}_score`,
+    organizationId,
+    leadId: MARCUS_LEAD_ID,
+    total: score.total,
+    band: score.band,
+    breakdown: score.breakdown,
+    computedByRuleVersion: score.ruleVersion,
+    createdAt: iso(2, 9),
+    updatedAt: iso(2, 9),
+  };
+
+  const qualification: LeadQualificationSession = {
+    id: `${MARCUS_LEAD_ID}_qual`,
+    organizationId,
+    leadId: MARCUS_LEAD_ID,
+    vertical: 'financial_advisor',
+    templateId: template.id,
+    answers: MARCUS_ANSWERS,
+    result,
+    completedAt: iso(2, 9),
+    createdAt: iso(2, 9),
+    updatedAt: iso(2, 9),
+  };
+
+  const consents: ConsentRecord[] = (['sms', 'email', 'call'] as const).map((type) => ({
+    id: `${MARCUS_LEAD_ID}_consent_${type}`,
+    organizationId,
+    leadId: MARCUS_LEAD_ID,
+    type,
+    status: 'granted',
+    capturedSource: 'financial_protection_checkup',
+    capturedAt: iso(2, 9),
+    createdAt: iso(2, 9),
+    updatedAt: iso(2, 9),
+  }));
+
+  const opportunity: Opportunity = {
+    id: `${MARCUS_LEAD_ID}_opp`,
+    organizationId,
+    leadId: MARCUS_LEAD_ID,
+    pipelineId: faPipelineId,
+    stageId: appointmentBookedStageId,
+    name: 'Marcus Johnson — Financial Protection Review',
+    monetaryValue: 3800,
+    status: 'open',
+    assignedAdvisorId: advisorId,
+    createdAt: iso(2, 9),
+    updatedAt: iso(0, 14),
+  };
+
+  const appointment: Appointment = {
+    id: `${MARCUS_LEAD_ID}_appt`,
+    organizationId,
+    leadId: MARCUS_LEAD_ID,
+    advisorId,
+    title: 'Financial Protection Review — Marcus Johnson',
+    startsAt: iso(-2, 15),
+    endsAt: iso(-2, 16),
+    status: 'scheduled',
+    meetingUrl: 'https://meet.demo/ben-peretz/marcus',
+    createdAt: iso(0, 14),
+    updatedAt: iso(0, 14),
+  };
+
+  const convId = `${MARCUS_LEAD_ID}_conv`;
+  const messages: Message[] = [
+    {
+      id: `${MARCUS_LEAD_ID}_msg0`,
+      organizationId,
+      conversationId: convId,
+      leadId: MARCUS_LEAD_ID,
+      channel: 'sms',
+      direction: 'outbound',
+      body: 'Hi Marcus, thanks for completing the Financial Protection Checkup! This is Ben Peretz. I have a couple of times open this week — would tomorrow at 3pm work for a quick review?',
+      authorType: 'automation',
+      sentAt: iso(1, 10),
+      createdAt: iso(1, 10),
+      updatedAt: iso(1, 10),
+    },
+    {
+      id: `${MARCUS_LEAD_ID}_msg1`,
+      organizationId,
+      conversationId: convId,
+      leadId: MARCUS_LEAD_ID,
+      channel: 'sms',
+      direction: 'inbound',
+      body: 'That works — 3pm tomorrow is great. Looking forward to it.',
+      authorType: 'human',
+      sentAt: iso(1, 11),
+      createdAt: iso(1, 11),
+      updatedAt: iso(1, 11),
+    },
+  ];
+
+  const note: Note = {
+    id: `${MARCUS_LEAD_ID}_note`,
+    organizationId,
+    leadId: MARCUS_LEAD_ID,
+    authorProfileId: advisorId,
+    body: 'Primary earner, family of four. Strong fit for income protection + estate planning. Confirm existing coverage on the call.',
+    createdAt: iso(1, 12),
+    updatedAt: iso(1, 12),
+  };
+
+  const task: Task = {
+    id: `${MARCUS_LEAD_ID}_task`,
+    organizationId,
+    leadId: MARCUS_LEAD_ID,
+    assignedProfileId: advisorId,
+    title: 'Prepare Financial Protection Review brief for Marcus Johnson',
+    dueAt: iso(-2, 13),
+    completedAt: null,
+    createdAt: iso(1, 12),
+    updatedAt: iso(1, 12),
+  };
+
+  // A rich timeline mirroring the 12-stage presentation journey.
+  const timeline: TimelineEvent[] = [
+    { id: `${MARCUS_LEAD_ID}_t0`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(2, 9), actorType: 'system', type: 'checkup_started', label: 'Started the Financial Protection Checkup' },
+    { id: `${MARCUS_LEAD_ID}_t1`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(2, 9), actorType: 'human', type: 'contact_captured', label: 'Contact captured with SMS, email, and call consent' },
+    { id: `${MARCUS_LEAD_ID}_t2`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(2, 9), actorType: 'human', type: 'qualification_completed', label: 'Completed all qualification questions' },
+    { id: `${MARCUS_LEAD_ID}_t3`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(2, 9), actorType: 'automation', type: 'scored', label: `Deterministic score ${score.total} — ${score.band.replace(/_/g, ' ')}` },
+    { id: `${MARCUS_LEAD_ID}_t4`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(2, 9), actorType: 'automation', type: 'tagged', label: `Tagged: ${MARCUS_TAGS.join(', ')}` },
+    { id: `${MARCUS_LEAD_ID}_t5`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(2, 9), actorType: 'ai', type: 'education_sent', label: 'Personalized educational results generated' },
+    { id: `${MARCUS_LEAD_ID}_t6`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(2, 9), actorType: 'system', type: 'crm_lead_created', label: 'CRM lead created and assigned to Ben Peretz' },
+    { id: `${MARCUS_LEAD_ID}_t7`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(1, 10), actorType: 'automation', type: 'pipeline_moved', label: 'Moved to “Appointment Booked” stage' },
+    { id: `${MARCUS_LEAD_ID}_t8`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(1, 10), actorType: 'automation', type: 'follow_up', label: 'Automated follow-up simulated (no external send)' },
+    { id: `${MARCUS_LEAD_ID}_t9`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(1, 11), actorType: 'human', type: 'appointment_booked', label: 'Financial Protection Review booked' },
+    { id: `${MARCUS_LEAD_ID}_t10`, organizationId, leadId: MARCUS_LEAD_ID, at: iso(0, 13), actorType: 'ai', type: 'advisor_brief', label: 'Advisor preparation brief generated' },
+  ];
+
+  return { contact, lead, score: leadScore, qualification, consents, opportunity, appointment, messages, note, task, timeline };
+}
+
 /** Generate the full demo world: a rich primary tenant + a second tenant. */
 export function generateDemoWorld(seed = 42): DemoWorld {
   return {
     orgs: [
       buildOrg({
-        name: 'AION Demo Agency',
-        slug: 'aion-demo',
+        name: 'Ben Peretz — Financial Protection & Planning',
+        slug: 'ben-peretz',
         isDemo: true,
         leadCount: 32,
         seed,

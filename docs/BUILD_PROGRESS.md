@@ -38,6 +38,31 @@ Playwright e2e tests pass. The system runs entirely offline on seeded demo data.
 - Tests: package unit tests + `/tests` integration suite (the 7 critical scenarios) + Playwright e2e.
 - Infrastructure: migrations + README, Supabase config, Docker Postgres + auth shim, Vercel config.
 
+## Pilot presentation mode (Ben Peretz)
+
+Presentation-layer customization on top of the approved foundation — no new
+architecture, providers, or databases.
+
+- Demo org customized to **Ben Peretz — Financial Protection & Planning** (solo
+  advisor practice); all leads route to Ben.
+- **Marcus Johnson** scripted journey injected deterministically into the demo
+  store: Financial Protection Checkup entry → contact + 3 consents → completed
+  qualification → deterministic **score 86** (high priority, computed by the
+  same engine, guarded by tests to stay in 80–88) → tags → personalized
+  education → CRM lead → pipeline movement → simulated follow-up (no send) →
+  booked appointment → AI advisor brief → dashboard update.
+- **`/presentation`** hub with 12 sequential stage buttons + a stage viewer
+  (`/presentation/stage/[step]`) with Prev/Next and live-screen deep links.
+- **`/demo-control`** (+ `/api/demo-control`): reset Marcus, seed at any stage,
+  disable external sending, restore demo state (in-memory, process-local).
+- **`/presentation/pricing`** (Pilot $4,500 + $997/mo; Growth $7,500 + $1,497/mo)
+  and **`/presentation/checklist`** (9 pre-launch sign-offs).
+- 20 **backup screenshots** of every critical stage
+  (`docs/presentation/screenshots`) + the run-of-show in
+  `docs/presentation-sequence.md`.
+- Fully offline, mobile + desktop, under five minutes. Live GoHighLevel, AI,
+  messaging, and production auth remain disconnected until the pilot is approved.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

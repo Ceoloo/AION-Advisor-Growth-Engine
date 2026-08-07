@@ -42,8 +42,8 @@ describe('DemoStore tenant isolation', () => {
   });
 
   it('produces deterministic output for the same seed', () => {
-    const a = new DemoStore(7).org('org_aion-demo');
-    const b = new DemoStore(7).org('org_aion-demo');
+    const a = new DemoStore(7).org('org_ben-peretz');
+    const b = new DemoStore(7).org('org_ben-peretz');
     expect(a?.leads.length).toBe(b?.leads.length);
     expect(a?.leads[0]?.score).toBe(b?.leads[0]?.score);
   });

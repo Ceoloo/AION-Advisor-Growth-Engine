@@ -10,8 +10,8 @@ import { loadEnv } from '@aion/shared';
 // A single store instance per server process keeps the demo data stable.
 const store = new DemoStore(42);
 
-/** The organization the demo signs in as (first tenant). */
-export const DEMO_ORG_ID = 'org_aion-demo';
+/** The organization the demo signs in as (first tenant — the Ben Peretz pilot). */
+export const DEMO_ORG_ID = 'org_ben-peretz';
 
 export function isDemoMode(): boolean {
   return loadEnv().DEMO_MODE;
