@@ -58,10 +58,10 @@ test.describe('Pilot presentation — Marcus Johnson journey', () => {
 
   test('pricing screen', async ({ page }) => {
     await page.goto('/presentation/pricing');
-    await expect(page.getByText('$4,500')).toBeVisible();
-    await expect(page.getByText('$997')).toBeVisible();
-    await expect(page.getByText('$7,500')).toBeVisible();
-    await expect(page.getByText('$1,497')).toBeVisible();
+    await expect(page.getByText('$4,500').first()).toBeVisible();
+    await expect(page.getByText('$997').first()).toBeVisible();
+    await expect(page.getByText('$7,500').first()).toBeVisible();
+    await expect(page.getByText('$1,497').first()).toBeVisible();
     await shot(page, 'pricing');
   });
 

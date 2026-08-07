@@ -12,6 +12,7 @@ import {
   FOLLOW_UP_DRAFTS,
   MARCUS_LEAD_ID,
   MARCUS_TAGS,
+  CLOSING_QUESTION,
 } from '@/lib/presentation';
 import type { ScoreCategory } from '@aion/types';
 
@@ -82,10 +83,10 @@ export default async function StagePage({ params }: { params: Promise<{ step: st
             </Link>
           ) : (
             <Link
-              href="/dashboard"
+              href="/presentation/pricing"
               className="rounded-lg bg-brand-green px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
             >
-              Finish → Dashboard
+              Review pilot pricing →
             </Link>
           )}
         </div>
@@ -322,6 +323,10 @@ function renderStage(step: number, detail: Detail) {
             Marcus’ journey moved every one of these — capture, qualification, priority, and a booked
             appointment.
           </p>
+          <div className="mt-4 rounded-lg border border-brand-green/30 bg-brand-green/5 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300">The ask</p>
+            <p className="mt-1 text-base font-semibold text-white">{CLOSING_QUESTION}</p>
+          </div>
         </Card>
       );
     }

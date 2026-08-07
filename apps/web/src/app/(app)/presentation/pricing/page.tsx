@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Card, Badge } from '@aion/ui';
 import { PageHeader } from '@/components/page-header';
-import { PRICING } from '@/lib/presentation';
+import { PRICING, CLOSING_QUESTION } from '@/lib/presentation';
 import { formatCurrency } from '@/lib/format';
 
 export default function PricingPage() {
@@ -55,6 +55,16 @@ export default function PricingPage() {
           configured around your audience, compliance requirements, calendar, follow-up process, and
           approved messaging.” The offer includes infrastructure, workflows, intelligence, reporting,
           support, and future integration capability — not just a page and some automations.
+        </p>
+      </Card>
+
+      <Card className="mt-4 border-brand-green/30 bg-brand-green/5 p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300">Closing question</p>
+        <p className="mt-1 text-lg font-semibold text-white">{CLOSING_QUESTION}</p>
+        <p className="mt-2 text-sm text-slate-400">
+          If yes: we start the Pilot at {formatCurrency(PRICING[0].setup)} setup +{' '}
+          {formatCurrency(PRICING[0].monthly)}/month, run the approval checklist, and target a kickoff
+          within two weeks.
         </p>
       </Card>
     </>

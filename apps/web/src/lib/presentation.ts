@@ -132,6 +132,10 @@ export const JOURNEY: JourneyStage[] = [
 
 export const TOTAL_STAGES = JOURNEY.length;
 
+/** The direct closing question to end the presentation on. */
+export const CLOSING_QUESTION =
+  'Ben — do you want to move forward with the pilot and get Marcus’ journey live for your practice?';
+
 /** Personalized educational results shown at stage 6 (educational, not advice). */
 export const EDUCATION_CARDS = [
   {
