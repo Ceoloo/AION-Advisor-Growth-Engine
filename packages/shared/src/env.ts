@@ -40,6 +40,23 @@ const EnvSchema = z.object({
 
   ENCRYPTION_KEY: z.string().optional(),
   CRON_SECRET: z.string().optional(),
+
+  // --- Airtable (Revenue & CRM OS) — server-side only ------------------------
+  // The token is a secret and must NEVER reach the browser. These are declared
+  // without literal defaults so no Airtable identifiers get inlined into any
+  // client bundle; the (non-secret) ID defaults live server-side in
+  // @aion/integrations (airtable.ts).
+  AIRTABLE_ACCESS_TOKEN: z.string().optional(),
+  AIRTABLE_API_BASE_URL: z.string().url().optional(),
+  AIRTABLE_BASE_ID: z.string().optional(),
+  AIRTABLE_LEADS_TABLE_ID: z.string().optional(),
+  AIRTABLE_SCORECARD_RESPONSES_TABLE_ID: z.string().optional(),
+  AIRTABLE_INTENT_EVENTS_TABLE_ID: z.string().optional(),
+  AION_FINANCIAL_ADVISOR_CAMPAIGN_RECORD_ID: z.string().optional(),
+  AION_ADVISOR_SCORECARD_ASSET_RECORD_ID: z.string().optional(),
+
+  // Booking / scheduling for the Advisor Growth Review (provider-agnostic URL).
+  ADVISOR_GROWTH_REVIEW_URL: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

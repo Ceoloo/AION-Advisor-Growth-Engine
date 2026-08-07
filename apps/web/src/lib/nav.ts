@@ -8,6 +8,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { href: '/presentation', label: 'Presentation', icon: '🎬', group: 'Pilot' },
+  { href: '/advisor-scorecard', label: 'Advisor Scorecard', icon: '🧮', group: 'Pilot' },
   { href: '/demo-control', label: 'Demo Control', icon: '🎛️', group: 'Pilot' },
   { href: '/presentation/pricing', label: 'Pricing', icon: '💰', group: 'Pilot' },
   { href: '/presentation/checklist', label: 'Approval Checklist', icon: '✅', group: 'Pilot' },

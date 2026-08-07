@@ -10,6 +10,7 @@ const nextConfig = {
     '@aion/database',
     '@aion/ghl',
     '@aion/integrations',
+    '@aion/scorecard',
     '@aion/shared',
     '@aion/types',
     '@aion/ui',

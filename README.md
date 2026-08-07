@@ -51,6 +51,7 @@ packages/
   auth/          RBAC + tenant-isolation helpers
   ghl/           GoHighLevel client, services, webhooks, mocks
   ai/            AI gateway, schemas, scoring, qualification, engines
+  scorecard/     Advisor Conversion Scorecard — question bank, deterministic scoring, findings, brief
   workflows/     Workflow engine + JSON definitions
   analytics/     Metric aggregation
   integrations/  Pluggable adapter registry (GHL live, others mocked)

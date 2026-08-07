@@ -63,6 +63,39 @@ architecture, providers, or databases.
 - Fully offline, mobile + desktop, under five minutes. Live GoHighLevel, AI,
   messaging, and production auth remain disconnected until the pilot is approved.
 
+## Advisor Conversion Scorecard (Client Zero acquisition funnel)
+
+Added as an extension of the existing app — no new framework, database, or auth.
+See `docs/scorecard.md`.
+
+- **`@aion/scorecard`** (new pure package): 18-question bank, deterministic
+  0–100 scoring (six sections 15/15/20/20/15/15), bands, normalized primary-leak
+  with systemic-tie handling, deterministic findings/first-fix/30-day-plan,
+  intent-points config, internal Advisor Brief generator, and a deterministic
+  Marcus Johnson demo (57 / Conversion Gaps). 29 unit tests.
+- **Airtable integration** in `@aion/integrations` (`airtable.ts`): server-side
+  client mapped to the real "Revenue & CRM OS" base schema (Leads, Advisor
+  Scorecard Responses, Intent & Attribution Events); email-dedupe lead upsert
+  that preserves existing data; idempotent response; Scorecard Completed /
+  Booking Page Viewed intent events. No-op in demo/unconfigured. Booking adapter
+  is provider-agnostic (`ADVISOR_GROWTH_REVIEW_URL`).
+- **Public funnel** at `/advisor-scorecard` (own layout, outside the `(app)`
+  shell): premium mobile-first landing → 18-step assessment (progress, back,
+  local persistence) → contact capture (unchecked consent) → immediate
+  personalized report (radial score, six meters, primary leak, strengths, 3
+  findings, first fix, 30-day plan, booking + save CTAs). `?sample=1` loads the
+  demo result.
+- **Reusable tracking layer** (`lib/scorecard-client.ts`) — the single analytics
+  client (anon/session id, UTM capture, the six scorecard events) → `/api/scorecard/event`.
+- **API**: `submit` (authoritative server scoring + best-effort CRM sync),
+  `event` (intent sink), `brief` (internal). Scoring never trusts the client;
+  Airtable secrets are server-only (verified: no Airtable identifiers in the
+  client bundle).
+- **Env**: Airtable + booking vars in `@aion/shared/env` and `.env.example`
+  (token is a server-only secret; ID defaults live server-side).
+- **Tests**: 29 scorecard unit tests + 6 Playwright funnel e2e (desktop + mobile)
+  + a client-bundle secret-leak check. Demo mode writes nothing.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.
