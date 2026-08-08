@@ -49,9 +49,34 @@ with the largest normalized gaps.
 ## Routes
 
 - `GET /advisor-scorecard` — public funnel (landing → 18 questions → contact → results). `?sample=1` loads the deterministic Marcus Johnson demo (57 / Conversion Gaps).
+- `GET /advisor-scorecard/proposal` — personalized growth plan (ROI + recommended plan + next step) from the visitor's persisted result, or `?sample=1`.
+- `GET /advisor-scorecard/booked` — post-booking confirmation; records the `Discovery Booked` intent event.
 - `POST /api/scorecard/submit` — validate → score (authoritative) → best-effort CRM sync → return report + booking target.
 - `POST /api/scorecard/event` — the analytics/intent sink (logs every event; persists booking intent to Airtable).
+- `POST /api/scorecard/booking-confirmed` — records the `Discovery Booked` intent (idempotent, demo-gated).
 - `POST /api/scorecard/brief` — internal deterministic Advisor Brief (not auto-sent).
+
+## Post-scorecard conversion path (deterministic)
+
+Extends the scorecard toward a booked review — all deterministic, no LLM, no
+external auto-sends:
+
+- **Intent + nurture** (`@aion/scorecard/nurture.ts`): accumulates intent points
+  (completion 15, booking viewed 25, discovery booked 50) plus a growth-priority
+  boost into tiers (cold/nurture/warm/hot) and a nurture plan (track, cadence,
+  next actions, stop conditions). A **`scorecard_nurture`** workflow definition
+  (`@aion/workflows`) represents it for a future visual builder.
+- **Discovery booking**: `Discovery Booked` intent event via
+  `/api/scorecard/booking-confirmed` (provider-agnostic; the scheduling tool's
+  confirmation redirect or the `/booked` page calls it).
+- **Advisor Brief delivery**: the deterministic brief is logged and written into
+  the CRM Scorecard Response record (never sent externally automatically).
+- **ROI business case** (`roi.ts`): an **illustrative**, editable-assumption
+  model of the upside from fixing the primary leak (added clients/yr, annual
+  upside range). Explicitly not a guarantee and not financial advice.
+- **Personalized proposal / demo** (`proposal.ts` + `/advisor-scorecard/proposal`):
+  assembles recap + ROI + recommended AION plan (Pilot recommended, Growth as the
+  anchor; Growth recommended for high-volume immediate buyers) + next step.
 
 ## Data flow
 
@@ -126,6 +151,8 @@ against your base first).
 
 ## Recommended next build
 
-Scorecard → intent-based nurture → discovery booking (`Discovery Booked` event)
-→ Advisor Brief delivery → ROI Business Case → personalized demo generation.
-Not started here — this ships the scorecard MVP only.
+The conversion path (intent nurture → discovery booking → Advisor Brief delivery
+→ ROI business case → personalized demo) is **implemented** (see above). Natural
+next steps: live scheduling-provider integration to fire `Discovery Booked`
+automatically, approved outbound channel wiring for the nurture cadence, and an
+optional AI-enhanced (still schema-validated) proposal narrative.

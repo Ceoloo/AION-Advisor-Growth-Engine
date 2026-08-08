@@ -86,6 +86,41 @@ test.describe('Advisor Conversion Scorecard', () => {
     await expect(page.getByText('Question 4 of 18')).toBeVisible();
   });
 
+  test('personalized proposal (sample) shows ROI, plan, and next step', async ({ page }) => {
+    await page.goto('/advisor-scorecard/proposal?sample=1');
+    await expect(page.getByRole('heading', { name: /Your Advisor Growth Plan/i })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('The opportunity (illustrative)')).toBeVisible();
+    await expect(page.getByText('Est. annual upside')).toBeVisible();
+    await expect(page.getByText('Recommended plan')).toBeVisible();
+    await expect(page.getByText('Pilot').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Book My 15-Minute Advisor Growth Review' })).toBeVisible();
+    await shot(page, 'proposal-sample');
+  });
+
+  test('results → personalized plan handoff works', async ({ page }) => {
+    await page.goto('/advisor-scorecard');
+    await page.getByRole('button', { name: 'Get My Conversion Score' }).click();
+    await answerAll(page, true);
+    await page.getByLabel('Full name *').fill('Jamie Rivera');
+    await page.getByLabel('Work email *').fill('jamie@riverawealth.example');
+    await page.getByLabel('Company / practice *').fill('Rivera Wealth');
+    await page.getByRole('button', { name: 'Reveal My Conversion Score' }).click();
+    await expect(page.getByText('Your Advisor Conversion Infrastructure Score')).toBeVisible({ timeout: 15_000 });
+    await page.getByRole('link', { name: /personalized growth plan/i }).click();
+    await expect(page.getByRole('heading', { name: /Your Advisor Growth Plan/i })).toBeVisible();
+  });
+
+  test('booked confirmation records the discovery booking', async ({ page }) => {
+    const [resp] = await Promise.all([
+      page.waitForResponse('**/api/scorecard/booking-confirmed'),
+      page.goto('/advisor-scorecard/booked?submissionId=e2e-booked-0001'),
+    ]);
+    expect(resp.ok()).toBeTruthy();
+    await expect(page.getByRole('heading', { name: /booked/i })).toBeVisible();
+    await expect(page.getByText('Confirmation recorded.')).toBeVisible();
+    await shot(page, 'booked');
+  });
+
   test('mobile viewport journey', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/advisor-scorecard');

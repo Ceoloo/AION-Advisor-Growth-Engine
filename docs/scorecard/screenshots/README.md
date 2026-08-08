@@ -15,3 +15,5 @@ cd apps/web && DEMO_MODE=true pnpm exec playwright test scorecard
 | `assessment-q1.png` / `assessment-mobile.png` | Assessment (question 1) |
 | `contact.png` | Contact / business context capture |
 | `results-sample.png` / `results-mobile.png` | Results report (deterministic Marcus demo: 57 / Conversion Gaps) |
+| `proposal-sample.png` | Personalized growth plan (ROI business case + recommended plan) |
+| `booked.png` | Discovery booking confirmation |

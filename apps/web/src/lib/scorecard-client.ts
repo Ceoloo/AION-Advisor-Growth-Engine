@@ -123,6 +123,36 @@ export function newSubmissionId(): string {
   return uid('sub');
 }
 
+// --- Completed-result handoff (for the personalized proposal page) -----------
+
+const RESULT_KEY = 'aion_scorecard_result_v1';
+
+export interface CompletedResult {
+  submissionId: string;
+  result: unknown;
+  contact: unknown;
+  booking?: { configured: boolean; url: string | null };
+}
+
+export function saveCompletedResult(data: CompletedResult): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(RESULT_KEY, JSON.stringify(data));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function loadCompletedResult(): CompletedResult | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(RESULT_KEY);
+    return raw ? (JSON.parse(raw) as CompletedResult) : null;
+  } catch {
+    return null;
+  }
+}
+
 // --- Tracking ----------------------------------------------------------------
 
 export interface TrackPayload {

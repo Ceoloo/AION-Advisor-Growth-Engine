@@ -10,7 +10,8 @@ export type TriggerType =
   | 'appointment.completed'
   | 'appointment.missed'
   | 'renewal.approaching'
-  | 'client.milestone';
+  | 'client.milestone'
+  | 'scorecard.completed';
 
 export interface WorkflowStep {
   /** Stable id used for logging and resumability. */

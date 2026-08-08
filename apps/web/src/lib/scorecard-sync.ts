@@ -51,9 +51,11 @@ export async function syncScorecardSubmission(
   const env = loadEnv();
   const log = logger.child({ component: 'scorecard-sync', submissionId: submission.submissionId });
 
-  // Internal Advisor Brief — deterministic; logged for internal use only.
+  // Internal Advisor Brief — deterministic; logged for internal use and
+  // delivered to the CRM response record (not sent externally).
   const brief = generateAdvisorBrief(submission.contact, result, submission.attribution);
-  log.info('advisor brief generated', { briefText: renderAdvisorBriefText(brief) });
+  const briefText = renderAdvisorBriefText(brief);
+  log.info('advisor brief generated', { briefText });
 
   if (env.DEMO_MODE) {
     log.info('demo mode — no production records written');
@@ -111,7 +113,11 @@ export async function syncScorecardSubmission(
         interestedInReview: false,
         consent: c.consentToFollowUp,
         sourceUtm,
-        rawAnswers: JSON.stringify({ answers: submission.answers, attribution: submission.attribution }),
+        // Deliver the internal Advisor Brief into the CRM record for the rep.
+        rawAnswers: `ADVISOR BRIEF\n${briefText}\n\nRAW\n${JSON.stringify({
+          answers: submission.answers,
+          attribution: submission.attribution,
+        })}`,
       },
       lead.id,
     );

@@ -96,6 +96,30 @@ See `docs/scorecard.md`.
 - **Tests**: 29 scorecard unit tests + 6 Playwright funnel e2e (desktop + mobile)
   + a client-bundle secret-leak check. Demo mode writes nothing.
 
+## Post-scorecard conversion path
+
+Extends the scorecard toward a booked review — deterministic, demo-safe, no
+external auto-sends. See `docs/scorecard.md`.
+
+- **Intent + nurture** (`@aion/scorecard/nurture.ts`): intent-point accumulation
+  (completion/booking/discovery + growth-priority boost), tiers
+  (cold/nurture/warm/hot), and a deterministic nurture plan (track, cadence, next
+  actions, stop conditions). New **`scorecard_nurture`** workflow definition
+  (`scorecard.completed` trigger) in `@aion/workflows`.
+- **Discovery booking**: `Discovery Booked` intent via
+  `/api/scorecard/booking-confirmed` (provider-agnostic) + `/advisor-scorecard/booked`
+  confirmation page.
+- **Advisor Brief delivery**: deterministic brief logged and written to the CRM
+  Scorecard Response record; never auto-sent externally.
+- **ROI business case** (`roi.ts`): illustrative, editable-assumption model of the
+  upside from fixing the primary leak — explicitly not a guarantee, not financial
+  advice.
+- **Personalized proposal / demo** (`proposal.ts` + `/advisor-scorecard/proposal`):
+  recap + ROI + recommended AION plan (Pilot recommended, Growth anchor) + next step.
+- Tests: +10 scorecard unit tests (nurture/roi/proposal) and +3 e2e (proposal
+  sample, results→plan handoff, booked confirmation). Totals: 39 scorecard unit
+  tests, 27 Playwright e2e. Client bundle still free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

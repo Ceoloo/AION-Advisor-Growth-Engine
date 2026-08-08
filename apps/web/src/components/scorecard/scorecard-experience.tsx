@@ -20,6 +20,7 @@ import {
   getAnonymousId,
   loadState,
   newSubmissionId,
+  saveCompletedResult,
   saveState,
   track,
 } from '@/lib/scorecard-client';
@@ -123,6 +124,13 @@ export function ScorecardExperience({ sampleMode = false }: { sampleMode?: boole
       setPhase('results');
       clearState();
       const r = json.result as ScorecardResult;
+      // Hand the result to the personalized proposal page.
+      saveCompletedResult({
+        submissionId: id,
+        result: r,
+        contact,
+        booking: json.booking ?? { configured: false, url: null },
+      });
       track('advisor_scorecard_completed', {
         submissionId: id,
         score: r.total,
@@ -220,6 +228,7 @@ export function ScorecardExperience({ sampleMode = false }: { sampleMode?: boole
           result={result}
           booking={booking}
           demo={demo}
+          submissionId={submissionId}
           onBook={onBook}
           onSaveReport={onSaveReport}
           onRestart={restart}

@@ -4,5 +4,8 @@ export * from './bands.js';
 export * from './types.js';
 export * from './scoring.js';
 export * from './intent.js';
+export * from './nurture.js';
+export * from './roi.js';
+export * from './proposal.js';
 export * from './brief.js';
 export * from './demo.js';

@@ -73,8 +73,9 @@ describe('WorkflowEngine', () => {
     expect(result.steps[0]?.status).toBe('awaiting_approval');
   });
 
-  it('ships all six documented workflow definitions', () => {
-    expect(WORKFLOW_DEFINITIONS).toHaveLength(6);
+  it('ships the documented workflow definitions', () => {
+    expect(WORKFLOW_DEFINITIONS).toHaveLength(7);
     expect(getWorkflow('new_lead')?.steps.length).toBeGreaterThan(0);
+    expect(getWorkflow('scorecard_nurture')?.trigger).toBe('scorecard.completed');
   });
 });

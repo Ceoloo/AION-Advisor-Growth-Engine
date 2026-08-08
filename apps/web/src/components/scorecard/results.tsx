@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Card, Badge } from '@aion/ui';
 import type { ScorecardResult } from '@aion/scorecard';
 import { ScoreDial, SectionMeter } from './score-meter';
@@ -8,13 +9,14 @@ interface Props {
   result: ScorecardResult;
   booking: { configured: boolean; url: string | null };
   demo: boolean;
+  submissionId: string;
   onBook: () => void;
   onSaveReport: () => void;
   onRestart: () => void;
   saved: boolean;
 }
 
-export function Results({ result, booking, demo, onBook, onSaveReport, onRestart, saved }: Props) {
+export function Results({ result, booking, demo, submissionId, onBook, onSaveReport, onRestart, saved }: Props) {
   return (
     <div className="space-y-5">
       {demo && (
@@ -149,9 +151,23 @@ export function Results({ result, booking, demo, onBook, onSaveReport, onRestart
             Booking opens shortly — your interest has been noted and we’ll reach out with times.
           </p>
         )}
-        <button onClick={onRestart} className="mt-4 text-xs text-slate-500 underline-offset-2 hover:underline">
-          Restart the scorecard
-        </button>
+        <div className="mt-4 flex flex-col items-center gap-1.5">
+          <Link
+            href="/advisor-scorecard/proposal"
+            className="text-sm font-medium text-blue-300 underline-offset-2 hover:underline"
+          >
+            See my personalized growth plan &amp; ROI →
+          </Link>
+          <Link
+            href={`/advisor-scorecard/booked?submissionId=${encodeURIComponent(submissionId)}`}
+            className="text-xs text-slate-500 underline-offset-2 hover:underline"
+          >
+            Already booked your review? Confirm it →
+          </Link>
+          <button onClick={onRestart} className="text-xs text-slate-500 underline-offset-2 hover:underline">
+            Restart the scorecard
+          </button>
+        </div>
       </Card>
 
       <p className="text-center text-[11px] text-slate-500">

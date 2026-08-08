@@ -5,6 +5,7 @@ import postAppointment from './post-appointment.json';
 import noShow from './no-show.json';
 import renewal from './renewal.json';
 import referral from './referral.json';
+import scorecardNurture from './scorecard-nurture.json';
 
 export const WORKFLOW_DEFINITIONS: WorkflowDefinition[] = [
   newLead as WorkflowDefinition,
@@ -13,6 +14,7 @@ export const WORKFLOW_DEFINITIONS: WorkflowDefinition[] = [
   noShow as WorkflowDefinition,
   renewal as WorkflowDefinition,
   referral as WorkflowDefinition,
+  scorecardNurture as WorkflowDefinition,
 ];
 
 export const WORKFLOWS_BY_KEY: Record<string, WorkflowDefinition> = Object.fromEntries(
