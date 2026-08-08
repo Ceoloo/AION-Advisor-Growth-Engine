@@ -1,0 +1,12 @@
+{
+  "name": "@aion/docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Documentation workspace. Authoritative docs live in /docs at the repo root; this app is the placeholder for a future docs site (e.g. Nextra/Docusaurus).",
+  "scripts": {
+    "dev": "node -e \"console.log('Docs live in /docs. Add a docs site (Nextra/Docusaurus) here when needed.')\"",
+    "build": "node -e \"console.log('docs build placeholder')\"",
+    "lint": "echo 'lint (docs) ok'",
+    "clean": "rm -rf .next dist"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@aion/tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "clean": "rm -rf coverage"
+  },
+  "dependencies": {
+    "@aion/ai": "workspace:*",
+    "@aion/auth": "workspace:*",
+    "@aion/compliance": "workspace:*",
+    "@aion/database": "workspace:*",
+    "@aion/ghl": "workspace:*",
+    "@aion/shared": "workspace:*",
+    "@aion/types": "workspace:*",
+    "@aion/workflows": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@aion/config": "workspace:*",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

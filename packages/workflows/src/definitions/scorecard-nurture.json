@@ -1,0 +1,16 @@
+{
+  "key": "scorecard_nurture",
+  "name": "Scorecard Intent Nurture",
+  "description": "Behavior-aware, intent-based nurture after a scorecard completion. Routes by intent tier, delivers the result recap and first-fix education, invites to the Advisor Growth Review, and stops on a real reply, booking, or opt-out.",
+  "trigger": "scorecard.completed",
+  "steps": [
+    { "id": "score_intent", "action": "score_intent", "label": "Score Intent & Assign Tier" },
+    { "id": "route_track", "action": "route_nurture_track", "label": "Route to Nurture Track" },
+    { "id": "deliver_recap", "action": "deliver_result_recap", "label": "Deliver Result Recap" },
+    { "id": "deliver_brief", "action": "deliver_advisor_brief", "label": "Deliver Advisor Brief (internal)" },
+    { "id": "first_touch", "action": "send_first_touch", "label": "Send First Nurture Touch", "requiresApproval": true },
+    { "id": "invite_review", "action": "invite_growth_review", "label": "Invite to Advisor Growth Review" },
+    { "id": "adaptive_followups", "action": "schedule_adaptive_followups", "label": "Schedule Adaptive Follow-Ups" },
+    { "id": "reactivation", "action": "queue_reactivation", "label": "Queue Reactivation If Not Ready" }
+  ]
+}

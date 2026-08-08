@@ -1,0 +1,9 @@
+{
+  "extends": "@aion/config/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"]
+  },
+  "include": ["src"]
+}
