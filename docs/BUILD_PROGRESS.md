@@ -228,6 +228,28 @@ produce more qualified opportunities and revenue? See `docs/kpis.md`.
   baseline + `/api/metrics`); smoke updated. Client bundle still free of Airtable
   identifiers.
 
+## Measurement framework — Observed → Modeled → Verified
+
+A provenance guardrail on the ROI engine so a modeled projection can never be
+presented as a measured or verified fact. See `docs/measurement-framework.md`.
+
+- **`MeasurementTier`** (`observed | modeled | verified`) added to `@aion/types`.
+- **ROI engine restructured** (`@aion/scorecard/roi.ts`): `computeRoiBusinessCase`
+  now returns explicit `observed` (measured facts — lead volume + source, real
+  booking rate / response time), `modeled` (illustrative projection — additional
+  appointments, modeled opportunity, modeled annual upside, with editable
+  assumptions attached), and optional `verified` (actual attributed outcomes —
+  appointments, opportunities, revenue). Verified is null for a fresh prospect
+  and is populated from real funnel data via the new `context` param. Disclaimer
+  strengthened ("Verified results replace the model once the pilot runs").
+- **Proposal UI reworked**: the ROI card is split into three visually distinct,
+  color-coded tiers with a legend (`measurement-tier` component); Verified shows
+  an honest pending state for prospects. The loop closes with the KPI layer —
+  Verified = the dashboard's actual funnel outcomes.
+- **Docs**: `docs/measurement-framework.md`. Tests: ROI unit tests rewritten for
+  the tiers (+2); proposal e2e asserts all three tiers render. Client bundle
+  still free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

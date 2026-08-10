@@ -236,3 +236,19 @@ export const FUNNEL_STAGES = [
   'verifiedRevenue',
 ] as const;
 export type FunnelStageKey = (typeof FUNNEL_STAGES)[number];
+
+// --- Measurement integrity ---------------------------------------------------
+
+/**
+ * The AION measurement framework. Every number the system shows is tagged with
+ * its provenance so a modeled projection is never mistaken for a measured fact:
+ *
+ *   observed  — actually measured (real inputs: lead volume, booking rate, …)
+ *   modeled   — illustrative projection from assumptions (NOT a guarantee)
+ *   verified  — actual attributed outcomes (real appointments/opportunities/revenue)
+ *
+ * The arc is Observed → Modeled → Verified: we start from what is measured,
+ * model the upside transparently, then replace the model with verified results.
+ */
+export const MEASUREMENT_TIERS = ['observed', 'modeled', 'verified'] as const;
+export type MeasurementTier = (typeof MEASUREMENT_TIERS)[number];

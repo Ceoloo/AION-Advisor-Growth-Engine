@@ -14,6 +14,7 @@ import {
 } from '@aion/scorecard';
 import { formatCurrency } from '@/lib/format';
 import { attributionToSourceUtm, captureAttribution, loadCompletedResult, track } from '@/lib/scorecard-client';
+import { MeasurementLegend, TierChip, TIER_STYLE } from '@/components/scorecard/measurement-tier';
 
 interface Data {
   submissionId: string;
@@ -101,38 +102,102 @@ export function ProposalView({ sampleMode = false }: { sampleMode?: boolean }) {
         </div>
       </div>
 
-      {/* ROI business case */}
+      {/* ROI business case — Observed → Modeled → Verified */}
       <Card className="p-5">
-        <h3 className="text-sm font-semibold text-slate-200">The opportunity (illustrative)</h3>
-        <p className="mt-1 text-xs text-slate-500">
-          Based on {roi.assumedLeadVolume ? 'an assumed' : 'your'} {roi.monthlyLeadVolume} leads/month
-          and editable assumptions. Fixing your {roi.primaryLeak} leak most directly improves your{' '}
-          {roi.targetMetric === 'lead_to_appointment' ? 'lead → appointment' : 'appointment → client'} rate.
-        </p>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Stat label="Est. added clients / yr" value={roi.uplift.additionalClientsPerYear.toString()} highlight />
-          <Stat
-            label="Est. annual upside"
-            value={`${formatCurrency(roi.uplift.annualRevenueLow)}–${formatCurrency(roi.uplift.annualRevenueLikely)}`}
-            highlight
-          />
-          <Stat
-            label="Appointments / mo"
-            value={`${roi.current.monthlyAppointments} → ${roi.projected.monthlyAppointments}`}
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-sm font-semibold text-slate-200">The opportunity</h3>
+          <MeasurementLegend />
         </div>
 
-        <details className="mt-3 text-xs text-slate-500">
-          <summary className="cursor-pointer">Assumptions (editable)</summary>
-          <ul className="mt-2 space-y-1">
-            <li>Avg. annual client value: {formatCurrency(roi.assumptions.avgClientAnnualValue)}</li>
-            <li>Baseline lead → appointment: {Math.round(roi.assumptions.leadToAppointmentBaseline * 100)}%</li>
-            <li>Baseline appointment → client: {Math.round(roi.assumptions.appointmentToClientBaseline * 100)}%</li>
-            <li>Modeled uplift on the leak metric: {Math.round(roi.assumptions.leakUpliftFraction * 100)}%</li>
-          </ul>
-        </details>
-        <p className="mt-2 text-[11px] text-slate-500">{roi.note}</p>
+        {/* OBSERVED — measured facts */}
+        <div className={`mt-4 rounded-xl border p-4 ${TIER_STYLE.observed.card}`}>
+          <div className="mb-2 flex items-center gap-2">
+            <TierChip tier="observed" />
+            <span className="text-xs text-slate-400">What we measured</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <TierStat
+              label="Lead volume / mo"
+              value={roi.observed.monthlyLeadVolume.toString()}
+              sub={roi.observed.leadVolumeSource === 'reported' ? 'you reported' : 'assumed default'}
+              tier="observed"
+            />
+            <TierStat
+              label="Booking rate"
+              value={roi.observed.bookingRate != null ? `${Math.round(roi.observed.bookingRate * 100)}%` : '—'}
+              sub={roi.observed.bookingRate != null ? 'measured' : 'measured during pilot'}
+              tier="observed"
+            />
+            <TierStat
+              label="Response time"
+              value={roi.observed.responseTimeMinutes != null ? `${roi.observed.responseTimeMinutes} min` : '—'}
+              sub={roi.observed.responseTimeMinutes != null ? 'measured' : 'measured during pilot'}
+              tier="observed"
+            />
+          </div>
+        </div>
+
+        {/* MODELED — illustrative projection */}
+        <div className={`mt-3 rounded-xl border p-4 ${TIER_STYLE.modeled.card}`}>
+          <div className="mb-2 flex items-center gap-2">
+            <TierChip tier="modeled" />
+            <span className="text-xs text-slate-400">
+              Illustrative — fixing your {roi.primaryLeak} leak improves your{' '}
+              {roi.targetMetric === 'lead_to_appointment' ? 'lead → appointment' : 'appointment → client'} rate
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <TierStat
+              label="Added appts / mo"
+              value={`+${roi.modeled.additionalAppointmentsPerMonth}`}
+              sub="modeled"
+              tier="modeled"
+            />
+            <TierStat
+              label="Added clients / yr"
+              value={`+${roi.modeled.additionalClientsPerYear}`}
+              sub="modeled"
+              tier="modeled"
+            />
+            <TierStat
+              label="Modeled annual upside"
+              value={`${formatCurrency(roi.modeled.annualRevenueLow)}–${formatCurrency(roi.modeled.annualRevenueLikely)}`}
+              sub="range, not a guarantee"
+              tier="modeled"
+            />
+          </div>
+          <details className="mt-3 text-xs text-slate-500">
+            <summary className="cursor-pointer">Assumptions (editable)</summary>
+            <ul className="mt-2 space-y-1">
+              <li>Avg. annual client value: {formatCurrency(roi.modeled.assumptions.avgClientAnnualValue)}</li>
+              <li>Baseline lead → appointment: {Math.round(roi.modeled.assumptions.leadToAppointmentBaseline * 100)}%</li>
+              <li>Baseline appointment → client: {Math.round(roi.modeled.assumptions.appointmentToClientBaseline * 100)}%</li>
+              <li>Modeled uplift on the leak metric: {Math.round(roi.modeled.assumptions.leakUpliftFraction * 100)}%</li>
+            </ul>
+          </details>
+        </div>
+
+        {/* VERIFIED — actual outcomes (or pending) */}
+        <div className={`mt-3 rounded-xl border p-4 ${TIER_STYLE.verified.card}`}>
+          <div className="mb-2 flex items-center gap-2">
+            <TierChip tier="verified" />
+            <span className="text-xs text-slate-400">Actual attributed outcomes</span>
+          </div>
+          {roi.verified ? (
+            <div className="grid gap-3 sm:grid-cols-3">
+              <TierStat label="Appointments" value={roi.verified.appointments.toString()} sub={roi.verified.periodLabel} tier="verified" />
+              <TierStat label="Opportunities" value={roi.verified.opportunities.toString()} sub={roi.verified.periodLabel} tier="verified" />
+              <TierStat label="Revenue attributed" value={formatCurrency(roi.verified.revenueAttributed)} sub={roi.verified.periodLabel} tier="verified" />
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400">
+              Populated during your pilot from real appointments, opportunities, and attributed revenue —
+              measured on the dashboard, not modeled here. Verified results replace the model above.
+            </p>
+          )}
+        </div>
+
+        <p className="mt-3 text-[11px] text-slate-500">{roi.note}</p>
       </Card>
 
       {/* First fix */}
@@ -180,13 +245,22 @@ export function ProposalView({ sampleMode = false }: { sampleMode?: boolean }) {
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function TierStat({
+  label,
+  value,
+  sub,
+  tier,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tier: 'observed' | 'modeled' | 'verified';
+}) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3 text-center">
+    <div className="rounded-lg border border-white/10 bg-black/20 p-3 text-center">
       <p className="text-xs text-slate-500">{label}</p>
-      <p className={`mt-0.5 text-lg font-semibold tabular-nums ${highlight ? 'text-brand-green' : 'text-white'}`}>
-        {value}
-      </p>
+      <p className={`mt-0.5 text-lg font-semibold tabular-nums ${TIER_STYLE[tier].accent}`}>{value}</p>
+      {sub && <p className="mt-0.5 text-[10px] text-slate-500">{sub}</p>}
     </div>
   );
 }

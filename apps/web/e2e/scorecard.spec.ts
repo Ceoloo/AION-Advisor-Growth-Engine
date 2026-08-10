@@ -89,8 +89,14 @@ test.describe('Advisor Conversion Scorecard', () => {
   test('personalized proposal (sample) shows ROI, plan, and next step', async ({ page }) => {
     await page.goto('/advisor-scorecard/proposal?sample=1');
     await expect(page.getByRole('heading', { name: /Your Advisor Growth Plan/i })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('The opportunity (illustrative)')).toBeVisible();
-    await expect(page.getByText('Est. annual upside')).toBeVisible();
+    await expect(page.getByText('The opportunity', { exact: true })).toBeVisible();
+    // Observed → Modeled → Verified tiers are all clearly distinguished.
+    await expect(page.getByText('Observed').first()).toBeVisible();
+    await expect(page.getByText('Modeled').first()).toBeVisible();
+    await expect(page.getByText('Verified').first()).toBeVisible();
+    await expect(page.getByText('Modeled annual upside')).toBeVisible();
+    // Verified is honestly shown as pending for a prospect (not modeled-as-fact).
+    await expect(page.getByText(/Populated during your pilot/i)).toBeVisible();
     await expect(page.getByText('Recommended plan')).toBeVisible();
     await expect(page.getByText('Pilot').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Book My 15-Minute Advisor Growth Review' })).toBeVisible();

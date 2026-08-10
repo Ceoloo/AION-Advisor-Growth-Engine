@@ -46,33 +46,60 @@ describe('nurture plan', () => {
   });
 });
 
-describe('ROI business case', () => {
+describe('ROI business case — Observed → Modeled → Verified', () => {
   it('is deterministic and illustrative', () => {
     const a = computeRoiBusinessCase(25, result);
     const b = computeRoiBusinessCase(25, result);
     expect(a).toEqual(b);
+    expect(a.framework).toBe('observed_modeled_verified');
     expect(a.illustrative).toBe(true);
-    expect(a.monthlyLeadVolume).toBe(25);
-    expect(a.assumedLeadVolume).toBe(false);
     expect(a.note).toMatch(/not a guarantee/i);
   });
 
-  it('assumes a lead volume when none is provided', () => {
-    const r = computeRoiBusinessCase(undefined, result);
-    expect(r.assumedLeadVolume).toBe(true);
-    expect(r.monthlyLeadVolume).toBe(DEFAULT_ASSUMED_LEAD_VOLUME);
+  it('records reported lead volume in the OBSERVED tier', () => {
+    const r = computeRoiBusinessCase(25, result);
+    expect(r.observed.tier).toBe('observed');
+    expect(r.observed.monthlyLeadVolume).toBe(25);
+    expect(r.observed.leadVolumeSource).toBe('reported');
   });
 
-  it('produces a non-negative uplift and maps the leak to a funnel metric', () => {
+  it('marks lead volume as assumed when none is provided', () => {
+    const r = computeRoiBusinessCase(undefined, result);
+    expect(r.observed.leadVolumeSource).toBe('assumed');
+    expect(r.observed.monthlyLeadVolume).toBe(DEFAULT_ASSUMED_LEAD_VOLUME);
+    expect(r.assumedLeadVolume).toBe(true);
+  });
+
+  it('produces a non-negative MODELED uplift and maps the leak to a funnel metric', () => {
     const r = computeRoiBusinessCase(25, result);
-    expect(r.uplift.additionalClientsPerYear).toBeGreaterThanOrEqual(0);
-    expect(r.uplift.annualRevenueLow).toBeLessThanOrEqual(r.uplift.annualRevenueLikely);
+    expect(r.modeled.tier).toBe('modeled');
+    expect(r.modeled.additionalAppointmentsPerMonth).toBeGreaterThanOrEqual(0);
+    expect(r.modeled.additionalClientsPerYear).toBeGreaterThanOrEqual(0);
+    expect(r.modeled.annualRevenueLow).toBeLessThanOrEqual(r.modeled.annualRevenueLikely);
+    expect(r.modeled.modeledAnnualUpside).toBe(r.modeled.annualRevenueLikely);
     expect(r.targetMetric).toBe('lead_to_appointment'); // follow-up leak
+  });
+
+  it('has no VERIFIED tier for a fresh prospect', () => {
+    expect(computeRoiBusinessCase(25, result).verified).toBeNull();
+  });
+
+  it('records actual outcomes in the VERIFIED tier when provided', () => {
+    const r = computeRoiBusinessCase(25, result, {}, {
+      observed: { bookingRate: 0.33, responseTimeMinutes: 6 },
+      verified: { periodLabel: 'Pilot — 30 days', appointments: 11, opportunities: 3, revenueAttributed: 710 },
+    });
+    expect(r.observed.bookingRate).toBe(0.33);
+    expect(r.observed.responseTimeMinutes).toBe(6);
+    expect(r.verified).not.toBeNull();
+    expect(r.verified!.tier).toBe('verified');
+    expect(r.verified!.appointments).toBe(11);
+    expect(r.verified!.revenueAttributed).toBe(710);
   });
 
   it('never divides by zero at zero leads', () => {
     const r = computeRoiBusinessCase(0, result);
-    expect(Number.isFinite(r.uplift.annualRevenueLikely)).toBe(true);
+    expect(Number.isFinite(r.modeled.annualRevenueLikely)).toBe(true);
   });
 });
 

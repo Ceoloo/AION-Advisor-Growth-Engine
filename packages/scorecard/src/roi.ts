@@ -1,10 +1,23 @@
 /**
- * ROI business case. Deterministic and ILLUSTRATIVE — it models the advisor's
- * own inputs against editable assumptions to size the opportunity of fixing the
- * primary conversion leak. It is NOT a guarantee, a projection of investment
- * returns, or financial advice; it estimates marketing/sales throughput only.
+ * ROI business case, structured around the AION measurement framework:
+ *
+ *   OBSERVED  → MODELED  → VERIFIED
+ *
+ *  - OBSERVED: facts we actually measured (the advisor's reported lead volume,
+ *    and — for a live client — real booking rate and response time).
+ *  - MODELED: an ILLUSTRATIVE projection of the upside from fixing the primary
+ *    leak, computed from the observed inputs and editable assumptions. It is NOT
+ *    a guarantee, not a projection of investment returns, and not financial
+ *    advice — it estimates marketing/sales throughput only.
+ *  - VERIFIED: actual attributed outcomes once the pilot runs (real appointments,
+ *    opportunities, and revenue). Absent until there is real data; when present
+ *    it supersedes the model.
+ *
+ * Keeping these tiers explicit is the guardrail: a modeled number can never be
+ * presented as if it were measured or verified.
  */
 import { round } from '@aion/shared';
+import type { MeasurementTier } from '@aion/types';
 import type { ScorecardResult } from './types.js';
 import type { SectionId } from './sections.js';
 
@@ -31,7 +44,7 @@ export const DEFAULT_ROI_ASSUMPTIONS: RoiAssumptions = {
 
 export const DEFAULT_ASSUMED_LEAD_VOLUME = 20;
 
-type TargetMetric = 'lead_to_appointment' | 'appointment_to_client';
+export type TargetMetric = 'lead_to_appointment' | 'appointment_to_client';
 
 /** Which funnel metric the primary leak most directly improves. */
 const LEAK_TARGET: Record<SectionId, TargetMetric> = {
@@ -43,28 +56,70 @@ const LEAK_TARGET: Record<SectionId, TargetMetric> = {
   crm: 'appointment_to_client',
 };
 
-export interface RoiBusinessCase {
+/** OBSERVED — facts actually measured. */
+export interface RoiObserved {
+  tier: 'observed';
   monthlyLeadVolume: number;
-  assumedLeadVolume: boolean;
-  primaryLeak: string;
+  /** Whether the lead volume was reported by the advisor or assumed as a default. */
+  leadVolumeSource: 'reported' | 'assumed';
+  /** Real lead→appointment (booking) rate, when known from live data. */
+  bookingRate?: number;
+  /** Real average first-response time in minutes, when known from live data. */
+  responseTimeMinutes?: number;
+}
+
+/** MODELED — illustrative projection. Not a guarantee. */
+export interface RoiModeled {
+  tier: 'modeled';
   targetMetric: TargetMetric;
   assumptions: RoiAssumptions;
   current: { monthlyAppointments: number; monthlyClients: number; annualRevenue: number };
   projected: { monthlyAppointments: number; monthlyClients: number; annualRevenue: number };
-  uplift: {
-    additionalClientsPerMonth: number;
-    additionalClientsPerYear: number;
-    annualRevenueLow: number;
-    annualRevenueLikely: number;
-  };
+  additionalAppointmentsPerMonth: number;
+  additionalClientsPerMonth: number;
+  additionalClientsPerYear: number;
+  /** Headline modeled annual upside (likely case). */
+  modeledAnnualUpside: number;
+  annualRevenueLow: number;
+  annualRevenueLikely: number;
+}
+
+/** VERIFIED — actual attributed outcomes (only when real pilot data exists). */
+export interface RoiVerified {
+  tier: 'verified';
+  periodLabel: string;
+  appointments: number;
+  opportunities: number;
+  revenueAttributed: number;
+}
+
+export interface RoiBusinessCase {
+  framework: 'observed_modeled_verified';
+  primaryLeak: string;
+  observed: RoiObserved;
+  modeled: RoiModeled;
+  /** Present only when real attributed outcomes exist; null for a fresh prospect. */
+  verified: RoiVerified | null;
+  /** Convenience mirrors of observed lead volume (back-compat). */
+  monthlyLeadVolume: number;
+  assumedLeadVolume: boolean;
+  targetMetric: TargetMetric;
   illustrative: true;
   note: string;
+}
+
+export interface RoiContext {
+  /** Real booking rate / response time to record in the OBSERVED tier. */
+  observed?: { bookingRate?: number; responseTimeMinutes?: number };
+  /** Actual attributed outcomes to record in the VERIFIED tier. */
+  verified?: Omit<RoiVerified, 'tier'>;
 }
 
 export function computeRoiBusinessCase(
   monthlyLeadVolume: number | undefined,
   result: ScorecardResult,
   overrides: Partial<RoiAssumptions> = {},
+  context: RoiContext = {},
 ): RoiBusinessCase {
   const a: RoiAssumptions = { ...DEFAULT_ROI_ASSUMPTIONS, ...overrides };
   const assumedLeadVolume = monthlyLeadVolume == null || monthlyLeadVolume <= 0;
@@ -86,15 +141,24 @@ export function computeRoiBusinessCase(
   const projectedAppointments = leads * l2aP;
   const projectedClients = projectedAppointments * a2cP;
 
+  const additionalAppointmentsPerMonth = Math.max(0, projectedAppointments - currentAppointments);
   const additionalClientsPerMonth = Math.max(0, projectedClients - currentClients);
   const additionalClientsPerYear = additionalClientsPerMonth * 12;
   const annualRevenueLikely = additionalClientsPerYear * a.avgClientAnnualValue;
   const annualRevenueLow = annualRevenueLikely * a.conservativeFactor;
 
-  return {
+  const observed: RoiObserved = {
+    tier: 'observed',
     monthlyLeadVolume: leads,
-    assumedLeadVolume,
-    primaryLeak: result.primaryLeak.label,
+    leadVolumeSource: assumedLeadVolume ? 'assumed' : 'reported',
+    ...(context.observed?.bookingRate != null ? { bookingRate: context.observed.bookingRate } : {}),
+    ...(context.observed?.responseTimeMinutes != null
+      ? { responseTimeMinutes: context.observed.responseTimeMinutes }
+      : {}),
+  };
+
+  const modeled: RoiModeled = {
+    tier: 'modeled',
     targetMetric,
     assumptions: a,
     current: {
@@ -107,15 +171,38 @@ export function computeRoiBusinessCase(
       monthlyClients: round(projectedClients, 2),
       annualRevenue: Math.round(projectedClients * 12 * a.avgClientAnnualValue),
     },
-    uplift: {
-      additionalClientsPerMonth: round(additionalClientsPerMonth, 2),
-      additionalClientsPerYear: round(additionalClientsPerYear, 1),
-      annualRevenueLow: Math.round(annualRevenueLow),
-      annualRevenueLikely: Math.round(annualRevenueLikely),
-    },
+    additionalAppointmentsPerMonth: round(additionalAppointmentsPerMonth, 1),
+    additionalClientsPerMonth: round(additionalClientsPerMonth, 2),
+    additionalClientsPerYear: round(additionalClientsPerYear, 1),
+    modeledAnnualUpside: Math.round(annualRevenueLikely),
+    annualRevenueLow: Math.round(annualRevenueLow),
+    annualRevenueLikely: Math.round(annualRevenueLikely),
+  };
+
+  const verified: RoiVerified | null = context.verified
+    ? { tier: 'verified', ...context.verified }
+    : null;
+
+  return {
+    framework: 'observed_modeled_verified',
+    primaryLeak: result.primaryLeak.label,
+    observed,
+    modeled,
+    verified,
+    monthlyLeadVolume: leads,
+    assumedLeadVolume,
+    targetMetric,
     illustrative: true,
     note:
-      'Illustrative estimate based on your inputs and the editable assumptions shown. It models ' +
-      'marketing and sales throughput only — it is not a guarantee and not financial advice.',
+      'The modeled figures are illustrative — based on your inputs and the editable assumptions ' +
+      'shown. They model marketing and sales throughput only: not a guarantee, not a projection of ' +
+      'investment returns, and not financial advice. Verified results replace the model once the pilot runs.',
   };
 }
+
+/** Human-readable labels + one-line descriptions for each measurement tier. */
+export const MEASUREMENT_TIER_META: Record<MeasurementTier, { label: string; description: string }> = {
+  observed: { label: 'Observed', description: 'Actually measured from your inputs and data.' },
+  modeled: { label: 'Modeled', description: 'Illustrative projection from assumptions — not a guarantee.' },
+  verified: { label: 'Verified', description: 'Actual attributed outcomes from the live pilot.' },
+};
