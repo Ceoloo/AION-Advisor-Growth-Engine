@@ -6,12 +6,21 @@
  */
 import { DemoStore, type DemoOrg } from '@aion/database/demo';
 import { isDemoMode as isEffectiveDemoMode } from '@aion/shared';
+import { getActiveClient, type ClientConfig } from '@aion/clients';
 
 // A single store instance per server process keeps the demo data stable.
 const store = new DemoStore(42);
 
-/** The organization the demo signs in as (first tenant — the Ben Peretz pilot). */
-export const DEMO_ORG_ID = 'org_ben-peretz';
+/** The active client configuration (Ben by default; AION_ACTIVE_CLIENT overrides). */
+export function getActiveClientConfig(): ClientConfig {
+  return getActiveClient();
+}
+
+/**
+ * The organization the app signs in as — resolved from the active ClientConfig,
+ * not hardcoded. Set AION_ACTIVE_CLIENT to boot into a different advisor tenant.
+ */
+export const DEMO_ORG_ID = getActiveClient().organizationId;
 
 /**
  * True when the EFFECTIVE runtime mode is demo (see @aion/shared/mode). This is

@@ -40,6 +40,7 @@ import type {
 } from '@aion/types';
 import { seededRandom } from '@aion/shared';
 import type { Calendar, SharedTask, WeeklyAvailability } from '@aion/scheduling';
+import { CLIENT_CONFIGS, leadPool, type ClientConfig } from '@aion/clients';
 import { PIPELINE_TEMPLATES } from '../pipelines.js';
 import type { DemoCampaign, DemoOrg, DemoWorld, TimelineEvent } from './types.js';
 
@@ -109,51 +110,38 @@ function deriveQualificationResult(
   };
 }
 
-interface OrgSpec {
-  name: string;
-  slug: string;
-  isDemo: boolean;
-  leadCount: number;
-  seed: number;
-  primaryVertical: IndustryVertical;
-}
-
-function buildOrg(spec: OrgSpec): DemoOrg {
-  const rng = seededRandom(spec.seed);
-  const organizationId = `org_${spec.slug}`;
+/**
+ * Build a demo tenant entirely from a ClientConfig. Nothing about the advisor
+ * is hardcoded here anymore — identity, team, vertical, routing, lead volume,
+ * and the scripted journey all come from the config. Onboarding a new advisor
+ * is adding a config, not editing this function.
+ */
+function buildOrg(config: ClientConfig, baseSeed: number): DemoOrg {
+  const rng = seededRandom(baseSeed + config.seedOffset);
+  const organizationId = config.organizationId;
+  const leadCount = config.demoLeadVolume;
 
   const organization: Organization = {
     id: organizationId,
     createdAt: iso(120),
     updatedAt: iso(1),
-    name: spec.name,
-    slug: spec.slug,
-    type: spec.primaryVertical === 'health_insurance' ? 'health_insurance_brokerage' : 'financial_advisor',
-    primaryVertical: spec.primaryVertical,
-    isDemo: spec.isDemo,
+    name: config.displayName,
+    slug: config.slug,
+    type: config.vertical === 'health_insurance' ? 'health_insurance_brokerage' : 'financial_advisor',
+    primaryVertical: config.vertical,
+    isDemo: config.isDemo,
   };
 
-  // --- Advisor profiles + memberships ----------------------------------------
-  // The primary (Ben Peretz) tenant is a solo financial-protection practice:
-  // Ben is the owner/advisor. Support roles round out the team for the demo.
-  const isBenPeretz = spec.slug === 'ben-peretz';
-  const advisorSpecs: { name: string; role: Role }[] = isBenPeretz
-    ? [
-        { name: 'Ben Peretz', role: 'agency_administrator' },
-        { name: 'Dana Cohen', role: 'appointment_setter' },
-        { name: 'Rachel Adler', role: 'client_success_representative' },
-      ]
-    : [
-        { name: 'Alex Morgan', role: 'agency_administrator' },
-        { name: 'Jordan Blake', role: 'financial_advisor' },
-        { name: 'Taylor Reed', role: 'insurance_agent' },
-        { name: 'Casey Vaughn', role: 'appointment_setter' },
-      ];
+  // --- Advisor profiles + memberships (from config.team) ---------------------
+  const advisorSpecs: { name: string; role: Role }[] = config.team.map((m) => ({
+    name: m.name,
+    role: m.role,
+  }));
   const profiles: Profile[] = advisorSpecs.map((a, i) => ({
     id: `${organizationId}_p${i}`,
-    authUserId: `auth_${spec.slug}_${i}`,
+    authUserId: `auth_${config.slug}_${i}`,
     fullName: a.name,
-    email: `${a.name.split(' ')[0]!.toLowerCase()}@${spec.slug}.demo`,
+    email: `${a.name.split(' ')[0]!.toLowerCase()}@${config.slug}.demo`,
     createdAt: iso(120),
     updatedAt: iso(1),
   }));
@@ -166,10 +154,9 @@ function buildOrg(spec: OrgSpec): DemoOrg {
     createdAt: iso(120),
     updatedAt: iso(1),
   }));
-  // Ben Peretz is a solo advisor practice — every lead routes to him (p0).
-  const advisorIds = isBenPeretz
-    ? [profiles[0]!.id]
-    : profiles.filter((_, i) => i >= 1 && i <= 2).map((p) => p.id);
+  // Lead routing comes from the config's lead pool (receivesLeads members).
+  const poolNames = new Set(leadPool(config).map((m) => m.name));
+  const advisorIds = profiles.filter((p) => poolNames.has(p.fullName)).map((p) => p.id);
 
   // --- Pipelines + stages (both templates) -----------------------------------
   const pipelines: Pipeline[] = [];
@@ -181,7 +168,7 @@ function buildOrg(spec: OrgSpec): DemoOrg {
       organizationId,
       name: tpl.name,
       vertical: tpl.vertical,
-      isDefault: tpl.vertical === spec.primaryVertical,
+      isDefault: tpl.vertical === config.vertical,
       createdAt: iso(120),
       updatedAt: iso(1),
     });
@@ -215,9 +202,9 @@ function buildOrg(spec: OrgSpec): DemoOrg {
   const consents: ConsentRecord[] = [];
   const timeline: TimelineEvent[] = [];
 
-  for (let i = 0; i < spec.leadCount; i++) {
+  for (let i = 0; i < leadCount; i++) {
     const vertical: IndustryVertical =
-      spec.primaryVertical === 'health_insurance'
+      config.vertical === 'health_insurance'
         ? rng() < 0.7
           ? 'health_insurance'
           : 'financial_advisor'
@@ -377,7 +364,7 @@ function buildOrg(spec: OrgSpec): DemoOrg {
   }
 
   // --- Appointments (10 on the primary org) ----------------------------------
-  const apptCount = spec.leadCount >= 20 ? 10 : 3;
+  const apptCount = leadCount >= 20 ? 10 : 3;
   const topLeads = [...leads].sort((a, b) => b.score - a.score).slice(0, apptCount);
   topLeads.forEach((lead, i) => {
     const inFuture = i % 2 === 0;
@@ -433,7 +420,7 @@ function buildOrg(spec: OrgSpec): DemoOrg {
         organizationId,
         leadId: lead.id,
         applicationId: `${organizationId}_app${i}`,
-        policyNumber: `POL-${spec.slug.toUpperCase()}-${1000 + i}`,
+        policyNumber: `POL-${config.slug.toUpperCase()}-${1000 + i}`,
         carrier: pick(rng, ['Pacific Life', 'Aetna', 'Humana']),
         productType: lead.vertical === 'financial_advisor' ? 'Term Life' : 'Medicare Advantage',
         status: 'active',
@@ -448,15 +435,15 @@ function buildOrg(spec: OrgSpec): DemoOrg {
 
   // --- Campaigns (5) ---------------------------------------------------------
   const campaigns: DemoCampaign[] = [
-    { id: `${organizationId}_cmp0`, organizationId, name: 'Meta Retirement Webinar', channel: 'paid_social', spend: 2400, leadsGenerated: Math.round(spec.leadCount * 0.3) },
-    { id: `${organizationId}_cmp1`, organizationId, name: 'Google Search — Medicare', channel: 'search', spend: 3100, leadsGenerated: Math.round(spec.leadCount * 0.25) },
-    { id: `${organizationId}_cmp2`, organizationId, name: 'Referral Program', channel: 'referral', spend: 500, leadsGenerated: Math.round(spec.leadCount * 0.2) },
-    { id: `${organizationId}_cmp3`, organizationId, name: 'Local Seminar Series', channel: 'event', spend: 1800, leadsGenerated: Math.round(spec.leadCount * 0.15) },
-    { id: `${organizationId}_cmp4`, organizationId, name: 'Email Nurture — Q3', channel: 'email', spend: 300, leadsGenerated: Math.round(spec.leadCount * 0.1) },
+    { id: `${organizationId}_cmp0`, organizationId, name: 'Meta Retirement Webinar', channel: 'paid_social', spend: 2400, leadsGenerated: Math.round(leadCount * 0.3) },
+    { id: `${organizationId}_cmp1`, organizationId, name: 'Google Search — Medicare', channel: 'search', spend: 3100, leadsGenerated: Math.round(leadCount * 0.25) },
+    { id: `${organizationId}_cmp2`, organizationId, name: 'Referral Program', channel: 'referral', spend: 500, leadsGenerated: Math.round(leadCount * 0.2) },
+    { id: `${organizationId}_cmp3`, organizationId, name: 'Local Seminar Series', channel: 'event', spend: 1800, leadsGenerated: Math.round(leadCount * 0.15) },
+    { id: `${organizationId}_cmp4`, organizationId, name: 'Email Nurture — Q3', channel: 'email', spend: 300, leadsGenerated: Math.round(leadCount * 0.1) },
   ];
 
-  // --- Inject the scripted Marcus Johnson pilot journey (Ben Peretz only) -----
-  if (isBenPeretz) {
+  // --- Inject the scripted Marcus Johnson pilot journey (config-driven) -------
+  if (config.demoJourney === 'marcus-johnson') {
     const faPipeline = pipelines.find((p) => p.vertical === 'financial_advisor')!;
     // "Appointment Booked" is index 5 of the Financial Advisor pipeline template.
     const apptStage = stages.find((s) => s.pipelineId === faPipeline.id && s.name === 'Appointment Booked')!;
@@ -475,7 +462,7 @@ function buildOrg(spec: OrgSpec): DemoOrg {
     timeline.unshift(...m.timeline);
   }
 
-  const scheduling = buildScheduling(organizationId, spec.slug, profiles);
+  const scheduling = buildScheduling(organizationId, config.slug, profiles);
 
   return {
     organization,
@@ -856,28 +843,15 @@ function buildScheduling(
   return { calendars, sharedTasks };
 }
 
-/** Generate the full demo world: a rich primary tenant + a second tenant. */
+/**
+ * Generate the full demo world from the client registry — one tenant per
+ * registered ClientConfig. The primary client (index 0) is the rich pilot
+ * tenant; additional clients prove the same engine serves multiple advisors and
+ * that tenants stay isolated. Each client's seedOffset keeps its world distinct.
+ */
 export function generateDemoWorld(seed = 42): DemoWorld {
   return {
-    orgs: [
-      buildOrg({
-        name: 'Ben Peretz — Financial Protection & Planning',
-        slug: 'ben-peretz',
-        isDemo: true,
-        leadCount: 32,
-        seed,
-        primaryVertical: 'financial_advisor',
-      }),
-      // Second tenant proves isolation — its records must never leak into the first.
-      buildOrg({
-        name: 'Second Tenant Insurance',
-        slug: 'second-tenant',
-        isDemo: true,
-        leadCount: 8,
-        seed: seed + 7,
-        primaryVertical: 'health_insurance',
-      }),
-    ],
+    orgs: CLIENT_CONFIGS.map((config) => buildOrg(config, seed)),
   };
 }
 

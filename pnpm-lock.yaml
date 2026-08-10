@@ -92,6 +92,9 @@ importers:
       '@aion/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@aion/clients':
+        specifier: workspace:*
+        version: link:../../packages/clients
       '@aion/compliance':
         specifier: workspace:*
         version: link:../../packages/compliance
@@ -257,6 +260,28 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)
 
+  packages/clients:
+    dependencies:
+      '@aion/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@aion/types':
+        specifier: workspace:*
+        version: link:../types
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@aion/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)
+
   packages/compliance:
     dependencies:
       '@aion/shared':
@@ -283,6 +308,9 @@ importers:
       '@aion/ai':
         specifier: workspace:*
         version: link:../ai
+      '@aion/clients':
+        specifier: workspace:*
+        version: link:../clients
       '@aion/scheduling':
         specifier: workspace:*
         version: link:../scheduling

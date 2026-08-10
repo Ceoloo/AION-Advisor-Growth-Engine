@@ -29,6 +29,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/documents', label: 'Documents', icon: '📁', group: 'Operations' },
   { href: '/compliance', label: 'Compliance', icon: '🛡️', group: 'Operations' },
   { href: '/integrations', label: 'Integrations', icon: '🔌', group: 'Operations' },
+  { href: '/client', label: 'Client Config', icon: '🧩', group: 'Operations' },
   { href: '/mode', label: 'Runtime Mode', icon: '🚦', group: 'Operations' },
   { href: '/team', label: 'Team', icon: '👥', group: 'Operations' },
   { href: '/settings', label: 'Settings', icon: '⚙️', group: 'Operations' },

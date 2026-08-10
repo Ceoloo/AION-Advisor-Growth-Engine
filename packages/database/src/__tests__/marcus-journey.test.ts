@@ -49,6 +49,6 @@ describe('Ben Peretz pilot — Marcus Johnson journey', () => {
   });
 
   it('stays tenant-isolated — Marcus is not visible to the second tenant', () => {
-    expect(store.getLead('org_second-tenant', MARCUS_LEAD_ID)).toBeNull();
+    expect(store.getLead('org_maria-santos', MARCUS_LEAD_ID)).toBeNull();
   });
 });

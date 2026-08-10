@@ -16,6 +16,7 @@
     "@aion/ai": "workspace:*",
     "@aion/analytics": "workspace:*",
     "@aion/auth": "workspace:*",
+    "@aion/clients": "workspace:*",
     "@aion/compliance": "workspace:*",
     "@aion/database": "workspace:*",
     "@aion/ghl": "workspace:*",

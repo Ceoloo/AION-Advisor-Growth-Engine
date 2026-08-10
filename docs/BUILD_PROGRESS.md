@@ -174,6 +174,33 @@ the system live. See `docs/environments.md`.
   3 compliance + 3 e2e (badge/banner, `/mode` checklist, read-only `/api/mode`).
   Client bundle still free of Airtable identifiers.
 
+## Client configuration layer (product, not project)
+
+Turns AION from a single-client build into a product: every advisor is a
+declarative `ClientConfig` on the same engine — onboarding is adding a config,
+not forking. See `docs/client-configuration.md`.
+
+- **`@aion/clients`** (new pure package): the `ClientConfig` type (advisor
+  identity, brand, audience/planning areas, booking + CRM/calendar providers,
+  lead sources, follow-up cadence, team roster, compliance + approval status,
+  demo controls), a Zod schema validated at registration (kebab-case ids,
+  `organizationId === org_${slug}`, ≥1 lead-receiving member), a registry
+  (`CLIENT_CONFIGS`), and a resolver (`getActiveClient()` via
+  `AION_ACTIVE_CLIENT`, safe fallback to primary; `leadPool`, `defaultLeadOwner`,
+  `isClientLiveApproved`). Ships **Ben Peretz** (primary, live) + **Maria Santos**
+  (a second advisor in the Medicare vertical, mid-onboarding). 14 unit tests.
+- **Demo seed is now config-driven**: `generateDemoWorld()` builds one tenant
+  per registered config — org identity, team, lead routing, lead volume, booking
+  slugs, calendars, and the scripted Marcus journey all come from the config. The
+  `isBenPeretz` branch is gone.
+- **Web app boots into the active client**: `DEMO_ORG_ID` and the shell org
+  resolve from `getActiveClient()`. New read-only `/client` governance page
+  (roster, per-advisor identity/providers/cadence, approval + compliance badges)
+  and `GET /api/client`; "Client Config" nav item.
+- **Docs**: `docs/client-configuration.md` + `.env.example` `AION_ACTIVE_CLIENT`.
+  Tests: 14 clients unit + 3 e2e; database seed tests updated for the new second
+  tenant. Client bundle still free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

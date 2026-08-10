@@ -6,6 +6,7 @@ const nextConfig = {
     '@aion/ai',
     '@aion/analytics',
     '@aion/auth',
+    '@aion/clients',
     '@aion/compliance',
     '@aion/database',
     '@aion/ghl',

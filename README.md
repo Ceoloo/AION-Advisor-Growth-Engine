@@ -53,6 +53,7 @@ packages/
   ai/            AI gateway, schemas, scoring, qualification, engines
   scorecard/     Advisor Conversion Scorecard — question bank, deterministic scoring, findings, brief
   scheduling/    Native calendars — availability/slot engine + round-robin assignment
+  clients/       Client configuration layer — ClientConfig type, schema, registry, resolver
   workflows/     Workflow engine + JSON definitions
   analytics/     Metric aggregation
   integrations/  Pluggable adapter registry (GHL live, others mocked)
@@ -119,6 +120,7 @@ Start with [`docs/architecture.md`](docs/architecture.md) (system diagrams), the
 [`workflows`](docs/workflows.md) ·
 [`security`](docs/security.md) ·
 [`compliance-considerations`](docs/compliance-considerations.md) ·
+[`client-configuration`](docs/client-configuration.md) ·
 [`environments`](docs/environments.md) ·
 [`deployment`](docs/deployment.md) ·
 [`demo-guide`](docs/demo-guide.md) ·
