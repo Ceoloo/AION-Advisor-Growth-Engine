@@ -8,7 +8,7 @@
  *      "Scorecard Completed" Intent event.
  * All Airtable work is best-effort — failures never block the visitor's report.
  */
-import { loadEnv, logger } from '@aion/shared';
+import { getCapabilities, isDemoMode, logger } from '@aion/shared';
 import { createAirtableClient } from '@aion/integrations';
 import {
   generateAdvisorBrief,
@@ -48,7 +48,7 @@ export async function syncScorecardSubmission(
   submission: Submission,
   result: ScorecardResult,
 ): Promise<SyncResult> {
-  const env = loadEnv();
+  const caps = getCapabilities();
   const log = logger.child({ component: 'scorecard-sync', submissionId: submission.submissionId });
 
   // Internal Advisor Brief — deterministic; logged for internal use and
@@ -57,9 +57,14 @@ export async function syncScorecardSubmission(
   const briefText = renderAdvisorBriefText(brief);
   log.info('advisor brief generated', { briefText });
 
-  if (env.DEMO_MODE) {
-    log.info('demo mode — no production records written');
-    return { demo: true, wrote: false };
+  // Production CRM writes are gated by the resolved runtime mode, not a raw env
+  // flag — demo never writes, and pilot/production only write once the gated
+  // activation checks pass (see @aion/shared/mode).
+  if (!caps.allowProductionCrmWrites) {
+    log.info('crm writes disabled for current mode — no production records written', {
+      mode: caps.mode,
+    });
+    return { demo: isDemoMode(), wrote: false };
   }
 
   const client = createAirtableClient(log);

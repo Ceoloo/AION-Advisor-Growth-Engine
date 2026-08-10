@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { loadEnv, logger } from '@aion/shared';
+import { getCapabilities, isDemoMode, logger } from '@aion/shared';
 import { createAirtableClient } from '@aion/integrations';
 import { EVENT_TO_INTENT, INTENT_POINTS, TRACKING_EVENTS } from '@aion/scorecard';
 
@@ -30,7 +30,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'invalid_event' }, { status: 422 });
   }
 
-  const env = loadEnv();
   const body = parsed.data;
   const log = logger.child({ component: 'scorecard-event' });
   // The single analytics layer: structured log for every event (redacted).
@@ -40,8 +39,9 @@ export async function POST(request: Request) {
   let recorded = false;
 
   // Only booking intent is persisted from this endpoint; completion is written
-  // authoritatively by /api/scorecard/submit (which has the full score).
-  if (intentType === 'Booking Page Viewed' && !env.DEMO_MODE) {
+  // authoritatively by /api/scorecard/submit (which has the full score). CRM
+  // writes are gated by the resolved runtime mode, not a raw env flag.
+  if (intentType === 'Booking Page Viewed' && getCapabilities().allowProductionCrmWrites) {
     const client = createAirtableClient(log);
     if (client) {
       try {
@@ -64,5 +64,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, recorded, demo: env.DEMO_MODE });
+  return NextResponse.json({ ok: true, recorded, demo: isDemoMode() });
 }

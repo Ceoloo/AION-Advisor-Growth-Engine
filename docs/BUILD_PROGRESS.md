@@ -143,6 +143,37 @@ team calendar, public booking links, and shared tasks. See `docs/scheduling.md`.
   round-robin, not-found, tasks, mobile). Totals now: 11 scheduling unit tests,
   33 Playwright e2e across the app.
 
+## Runtime modes & gated activation (DEMO → PILOT → PRODUCTION)
+
+A deliberate, gated promotion path so no single environment variable can flip
+the system live. See `docs/environments.md`.
+
+- **`@aion/shared/mode.ts`** (new): `RuntimeMode` (`demo`/`pilot`/`production`),
+  a per-mode `ModeCapabilities` matrix (mock data/AI, GHL simulation, outbound,
+  CRM writes, human-approval, live campaigns, controlled volume, monitoring),
+  and `resolveRuntimeMode()`. The **effective mode** is the highest tier whose
+  readiness + explicit-approval gates all pass, capped by the requested
+  `RUNTIME_MODE`, falling back safely otherwise. Production is **stepwise** —
+  it requires a prior pilot-ready state plus its own gates. `RUNTIME_MODE`
+  alone only expresses intent; `DEMO_MODE=true` hard-locks to demo. 11 unit tests.
+- **Gated env signals** in `@aion/shared/env` + `.env.example`: pilot
+  (`BRANDING_APPROVED`, `COMMS_APPROVED`, `PILOT_ACTIVATION_CONFIRMED`,
+  `PILOT_APPROVED_BY`, plus real GHL/Airtable/booking/encryption) and production
+  (`LAUNCH_APPROVED`, `PRODUCTION_ACTIVATION_CONFIRMED`,
+  `PRODUCTION_ACTIVATION_TOKEN`, `PRODUCTION_APPROVED_BY`, plus Sentry/DB/cron).
+- **Capabilities wired into gates**: scorecard CRM writes (`scorecard-sync`,
+  `/api/scorecard/event`, `/api/scorecard/booking-confirmed`) now gate on
+  `allowProductionCrmWrites`; `@aion/compliance` gains mode-aware
+  `assertActionPermitted(action)` blocking outbound/destructive actions unless
+  the resolved mode grants the capability. All fail closed. +3 compliance tests.
+- **Governance surface**: read-only `/mode` page (effective vs requested mode,
+  promotion path, per-gate pass/fail checklists, blockers, capability grid) and
+  `GET /api/mode`; a mode badge + mode-aware banner in the app shell. Neither
+  can promote the system — activation is a deployment action only.
+- **Docs**: `docs/environments.md` activation runbook. Tests: 11 mode unit +
+  3 compliance + 3 e2e (badge/banner, `/mode` checklist, read-only `/api/mode`).
+  Client bundle still free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

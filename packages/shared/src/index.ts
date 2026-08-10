@@ -1,4 +1,5 @@
 export * from './env.js';
+export * from './mode.js';
 export * from './logger.js';
 export * from './redaction.js';
 export * from './utils.js';

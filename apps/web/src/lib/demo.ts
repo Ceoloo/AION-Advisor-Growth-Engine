@@ -5,7 +5,7 @@
  * pages and API routes never touch the store directly.
  */
 import { DemoStore, type DemoOrg } from '@aion/database/demo';
-import { loadEnv } from '@aion/shared';
+import { isDemoMode as isEffectiveDemoMode } from '@aion/shared';
 
 // A single store instance per server process keeps the demo data stable.
 const store = new DemoStore(42);
@@ -13,8 +13,13 @@ const store = new DemoStore(42);
 /** The organization the demo signs in as (first tenant — the Ben Peretz pilot). */
 export const DEMO_ORG_ID = 'org_ben-peretz';
 
+/**
+ * True when the EFFECTIVE runtime mode is demo (see @aion/shared/mode). This is
+ * the resolved mode — not just the DEMO_MODE flag — so it correctly reports
+ * pilot/production once the gated activation checks pass.
+ */
 export function isDemoMode(): boolean {
-  return loadEnv().DEMO_MODE;
+  return isEffectiveDemoMode();
 }
 
 export function getStore(): DemoStore {

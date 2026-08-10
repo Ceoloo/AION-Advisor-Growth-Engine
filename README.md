@@ -119,6 +119,7 @@ Start with [`docs/architecture.md`](docs/architecture.md) (system diagrams), the
 [`workflows`](docs/workflows.md) ·
 [`security`](docs/security.md) ·
 [`compliance-considerations`](docs/compliance-considerations.md) ·
+[`environments`](docs/environments.md) ·
 [`deployment`](docs/deployment.md) ·
 [`demo-guide`](docs/demo-guide.md) ·
 [`api-reference`](docs/api-reference.md) ·

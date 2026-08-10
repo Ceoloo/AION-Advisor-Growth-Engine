@@ -1,7 +1,17 @@
 import Link from 'next/link';
+import type { RuntimeMode } from '@aion/shared';
 import { initials } from '@/lib/format';
+import { ModeBadge } from '@/components/mode-badge';
 
-export function TopBar({ orgName, userName }: { orgName: string; userName: string }) {
+export function TopBar({
+  orgName,
+  userName,
+  mode,
+}: {
+  orgName: string;
+  userName: string;
+  mode: RuntimeMode;
+}) {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-white/10 bg-navy/80 px-4 backdrop-blur lg:px-6">
       <div className="flex items-center gap-3">
@@ -17,6 +27,7 @@ export function TopBar({ orgName, userName }: { orgName: string; userName: strin
       </div>
 
       <div className="flex items-center gap-3">
+        <ModeBadge mode={mode} />
         <div className="hidden items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-400 sm:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
           All systems operational

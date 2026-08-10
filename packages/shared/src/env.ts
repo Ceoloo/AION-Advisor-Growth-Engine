@@ -57,6 +57,24 @@ const EnvSchema = z.object({
 
   // Booking / scheduling for the Advisor Growth Review (provider-agnostic URL).
   ADVISOR_GROWTH_REVIEW_URL: z.string().optional(),
+
+  // --- Runtime mode & gated activation ---------------------------------------
+  // The *requested* operating mode. This alone does NOT enable a live mode —
+  // reaching PILOT or PRODUCTION requires the readiness + explicit approval
+  // signals below (see @aion/shared/mode.ts). Default is the safe demo mode.
+  RUNTIME_MODE: z.enum(['demo', 'pilot', 'production']).default('demo'),
+
+  // Pilot activation signals (all required to leave demo).
+  BRANDING_APPROVED: booleanish.default('false'),
+  COMMS_APPROVED: booleanish.default('false'),
+  PILOT_ACTIVATION_CONFIRMED: booleanish.default('false'),
+  PILOT_APPROVED_BY: z.string().optional(),
+
+  // Production activation signals (required IN ADDITION to all pilot signals).
+  LAUNCH_APPROVED: booleanish.default('false'),
+  PRODUCTION_ACTIVATION_CONFIRMED: booleanish.default('false'),
+  PRODUCTION_ACTIVATION_TOKEN: z.string().optional(),
+  PRODUCTION_APPROVED_BY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -107,6 +125,7 @@ export function resetEnvCache(): void {
   cached = null;
 }
 
-export function isDemoMode(source: NodeJS.ProcessEnv = process.env): boolean {
-  return loadEnv(source).DEMO_MODE;
-}
+// NOTE: `isDemoMode()` now lives in ./mode.ts and is derived from the resolved
+// runtime mode (demo | pilot | production), not directly from the DEMO_MODE
+// flag. It is re-exported from the package root, so existing imports of
+// `isDemoMode` from '@aion/shared' continue to work.

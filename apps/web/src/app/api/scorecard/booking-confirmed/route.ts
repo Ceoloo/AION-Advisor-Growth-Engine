@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { loadEnv, logger } from '@aion/shared';
+import { getCapabilities, isDemoMode, logger } from '@aion/shared';
 import { createAirtableClient } from '@aion/integrations';
 import { INTENT_POINTS } from '@aion/scorecard';
 
@@ -21,15 +21,19 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: 'invalid_request' }, { status: 422 });
   }
-  const env = loadEnv();
   const body = parsed.data;
   const log = logger.child({ component: 'scorecard-booking-confirmed' });
   log.info('discovery booked', { submissionId: body.submissionId });
 
-  if (env.DEMO_MODE) return NextResponse.json({ ok: true, recorded: false, demo: true });
+  // Gated by the resolved runtime mode: demo writes nothing; pilot/production
+  // only write once the gated activation checks pass (see @aion/shared/mode).
+  const demo = isDemoMode();
+  if (!getCapabilities().allowProductionCrmWrites) {
+    return NextResponse.json({ ok: true, recorded: false, demo });
+  }
 
   const client = createAirtableClient(log);
-  if (!client) return NextResponse.json({ ok: true, recorded: false, demo: false });
+  if (!client) return NextResponse.json({ ok: true, recorded: false, demo });
 
   try {
     await client.createIntentEvent(
@@ -45,11 +49,11 @@ export async function POST(request: Request) {
       },
       body.leadId,
     );
-    return NextResponse.json({ ok: true, recorded: true, demo: false });
+    return NextResponse.json({ ok: true, recorded: true, demo });
   } catch (err) {
     log.error('discovery booked write failed (non-blocking)', {
       error: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json({ ok: true, recorded: false, demo: false });
+    return NextResponse.json({ ok: true, recorded: false, demo });
   }
 }
