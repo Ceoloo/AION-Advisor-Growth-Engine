@@ -63,6 +63,23 @@ export const mariaSantos: ClientConfig = {
     status: 'pending_approval',
   },
 
+  baseline: {
+    periodLabel: 'Prior 30 days (before AION)',
+    note: 'Workshop sign-ups worked manually; no same-day follow-up.',
+    traffic: 70,
+    leads: 6,
+    qualified: 2,
+    appointments: 1,
+    showed: 1,
+    consultations: 0,
+    opportunities: 0,
+    clients: 0,
+    verifiedRevenue: 0,
+    spend: 8100,
+    responseTimeMinutes: 180,
+  },
+  pilotPeriodLabel: 'Pilot to date (with AION)',
+
   isDemo: true,
   demoLeadVolume: 8,
   seedOffset: 7,

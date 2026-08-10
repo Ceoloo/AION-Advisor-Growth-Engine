@@ -1,41 +1,38 @@
 import Link from 'next/link';
-import { KpiCard, Card, ScoreBadge, Badge } from '@aion/ui';
+import { KpiCard, Card } from '@aion/ui';
 import { PageHeader } from '@/components/page-header';
+import { FunnelChart } from '@/components/funnel-chart';
+import { BaselineVsPilot } from '@/components/baseline-vs-pilot';
 import { getActiveOrg } from '@/lib/demo';
-import { dashboardMetricsForOrg } from '@/lib/metrics';
+import { funnelReportForOrg, funnelComparisonForOrg } from '@/lib/metrics';
 import { formatCurrency, formatDateTime, percent } from '@/lib/format';
+
+export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
   const org = getActiveOrg();
-  const m = dashboardMetricsForOrg(org);
-
-  // Lead-source performance.
-  const bySource = new Map<string, number>();
-  for (const l of org.leads) bySource.set(l.source ?? 'unknown', (bySource.get(l.source ?? 'unknown') ?? 0) + 1);
-  const sourceRows = [...bySource.entries()].sort((a, b) => b[1] - a[1]);
+  const report = funnelReportForOrg(org);
+  const comparison = funnelComparisonForOrg(org);
+  const c = report.conversions;
 
   // Advisor performance.
-  const advisorRows = org.profiles.slice(1, 4).map((p) => {
+  const advisorRows = org.profiles.slice(0, 3).map((p) => {
     const leads = org.leads.filter((l) => l.assignedAdvisorId === p.id);
     const appts = org.appointments.filter((a) => a.advisorId === p.id);
     return { name: p.fullName, leads: leads.length, appts: appts.length };
   });
-
   const recent = [...org.timeline].sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 8);
-  const funnel = [
-    { label: 'Leads', value: m.totalLeads },
-    { label: 'Qualified', value: m.qualifiedLeads },
-    { label: 'Appointments', value: m.appointmentsBooked },
-    { label: 'Applications', value: m.applicationsSubmitted },
-    { label: 'Policies', value: m.policiesIssued },
-  ];
-  const funnelMax = Math.max(...funnel.map((f) => f.value), 1);
+
+  const responseLabel =
+    report.responseTimeMinutes >= 60
+      ? `${(report.responseTimeMinutes / 60).toFixed(1)}h`
+      : `${report.responseTimeMinutes}m`;
 
   return (
     <>
       <PageHeader
         title="Executive Dashboard"
-        description="Live from application data. Filter by date, team, source, and advisor in a live deployment."
+        description="Did the pilot produce more qualified opportunities and revenue? The whole funnel, live from application data."
         actions={
           <Link
             href="/leads"
@@ -46,81 +43,101 @@ export default function DashboardPage() {
         }
       />
 
-      {/* KPI grid */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
-        <KpiCard label="Total Leads" value={m.totalLeads} hint={`${m.newLeadsThisWeek} new this week`} />
-        <KpiCard label="Qualified" value={m.qualifiedLeads} deltaTone="up" delta={`${m.highPriorityLeads} high-priority`} />
-        <KpiCard label="Appointments" value={m.appointmentsBooked} hint={`${percent(m.appointmentShowRate)} show rate`} />
-        <KpiCard label="Policies Issued" value={m.policiesIssued} deltaTone="up" />
-        <KpiCard label="Closed Revenue" value={formatCurrency(m.closedRevenue)} deltaTone="up" />
-        <KpiCard label="Pipeline Value" value={formatCurrency(m.estimatedPipelineValue)} hint="estimated" />
-        <KpiCard label="Lead → Appt" value={percent(m.leadToAppointmentRate)} />
-        <KpiCard label="Appt → Close" value={percent(m.appointmentToCloseRate)} />
-        <KpiCard label="Cost / Lead" value={formatCurrency(m.costPerLead)} />
-        <KpiCard label="Cost / Appt" value={formatCurrency(m.costPerAppointment)} />
-        <KpiCard label="Cost / Acq." value={formatCurrency(m.costPerAcquisition)} />
-        <KpiCard label="Avg Response" value={`${m.averageResponseTimeMinutes}m`} />
+      {/* Conversion headline — the five rates Ben tracks. */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <KpiCard label="Lead → Qualified" value={percent(c.leadToQualified)} deltaTone="up" />
+        <KpiCard label="Qualified → Booked" value={percent(c.qualifiedToBooked)} />
+        <KpiCard label="Booked → Show" value={percent(c.bookedToShow)} />
+        <KpiCard label="Show → Next Step" value={percent(c.showToNextStep)} />
+        <KpiCard label="Lead → Client" value={percent(c.leadToClient)} deltaTone="up" />
+        <KpiCard label="Avg Response" value={responseLabel} hint="first touch" />
       </div>
 
+      {/* Baseline vs Pilot — the testimonial-maker. */}
+      {comparison && (
+        <div className="mt-4">
+          <BaselineVsPilot comparison={comparison} />
+        </div>
+      )}
+
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        {/* Funnel */}
+        {/* Full funnel */}
         <Card className="p-5 lg:col-span-2">
-          <h3 className="mb-4 text-sm font-semibold text-slate-200">Conversion Funnel</h3>
-          <div className="space-y-3">
-            {funnel.map((f) => (
-              <div key={f.label} className="flex items-center gap-3">
-                <span className="w-24 shrink-0 text-xs text-slate-400">{f.label}</span>
-                <div className="h-6 flex-1 overflow-hidden rounded-md bg-white/5">
-                  <div
-                    className="flex h-full items-center justify-end bg-gradient-to-r from-brand-blue/70 to-brand-blue px-2 text-[11px] font-medium text-white"
-                    style={{ width: `${Math.max((f.value / funnelMax) * 100, 8)}%` }}
-                  >
-                    {f.value}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-200">Revenue Funnel</h3>
+            <span className="text-[11px] text-slate-500">step conversion →</span>
+          </div>
+          <FunnelChart stages={report.stages} />
+        </Card>
+
+        {/* Economics */}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+          <KpiCard label="Pipeline Value" value={formatCurrency(report.pipelineValue)} hint="open opportunities" />
+          <KpiCard label="Verified Revenue" value={formatCurrency(report.verifiedRevenue)} deltaTone="up" hint="issued" />
+          <KpiCard label="Cost / Lead" value={formatCurrency(report.costPerLead)} />
+          <KpiCard label="Cost / Qualified" value={formatCurrency(report.costPerQualifiedLead)} />
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        {/* Source conversion */}
+        <Card className="p-5">
+          <h3 className="mb-3 text-sm font-semibold text-slate-200">Source Conversion</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[360px] text-sm">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
+                  <th className="pb-2 font-medium">Source</th>
+                  <th className="pb-2 text-right font-medium">Leads</th>
+                  <th className="pb-2 text-right font-medium">Qual %</th>
+                  <th className="pb-2 text-right font-medium">Client %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.sources.map((s) => (
+                  <tr key={s.source} className="border-t border-white/5">
+                    <td className="py-2 capitalize text-slate-300">{s.source.replace(/_/g, ' ')}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-300">{s.leads}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-400">{percent(s.leadToQualified)}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-400">{percent(s.leadToClient)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </Card>
 
-        {/* Renewals + referrals summary */}
+        {/* Campaign conversion */}
         <Card className="p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-200">Opportunities</h3>
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-center justify-between">
-              <span className="text-slate-400">Renewal opportunities</span>
-              <Badge tone="gold">{m.renewalOpportunities}</Badge>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="text-slate-400">Applications started</span>
-              <Badge tone="blue">{m.applicationsStarted}</Badge>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="text-slate-400">Applications submitted</span>
-              <Badge tone="green">{m.applicationsSubmitted}</Badge>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="text-slate-400">High-priority leads</span>
-              <Badge tone="green">{m.highPriorityLeads}</Badge>
-            </li>
-          </ul>
+          <h3 className="mb-3 text-sm font-semibold text-slate-200">Campaign Conversion</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[420px] text-sm">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-wider text-slate-500">
+                  <th className="pb-2 font-medium">Campaign</th>
+                  <th className="pb-2 text-right font-medium">Visits</th>
+                  <th className="pb-2 text-right font-medium">Leads</th>
+                  <th className="pb-2 text-right font-medium">Visit→Lead</th>
+                  <th className="pb-2 text-right font-medium">CPL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.campaigns.map((c) => (
+                  <tr key={c.id} className="border-t border-white/5">
+                    <td className="py-2 text-slate-300">{c.name}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-400">{c.visits.toLocaleString()}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-300">{c.leads}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-400">{percent(c.visitToLead)}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-400">{formatCurrency(c.costPerLead)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        {/* Lead source performance */}
-        <Card className="p-5">
-          <h3 className="mb-3 text-sm font-semibold text-slate-200">Lead Source Performance</h3>
-          <ul className="space-y-2">
-            {sourceRows.map(([src, count]) => (
-              <li key={src} className="flex items-center justify-between text-sm">
-                <span className="capitalize text-slate-400">{src.replace(/_/g, ' ')}</span>
-                <span className="font-medium tabular-nums text-slate-200">{count}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
         {/* Advisor performance */}
         <Card className="p-5">
           <h3 className="mb-3 text-sm font-semibold text-slate-200">Advisor Performance</h3>

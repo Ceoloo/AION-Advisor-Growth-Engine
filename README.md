@@ -121,6 +121,7 @@ Start with [`docs/architecture.md`](docs/architecture.md) (system diagrams), the
 [`security`](docs/security.md) ·
 [`compliance-considerations`](docs/compliance-considerations.md) ·
 [`client-configuration`](docs/client-configuration.md) ·
+[`kpis`](docs/kpis.md) ·
 [`environments`](docs/environments.md) ·
 [`deployment`](docs/deployment.md) ·
 [`demo-guide`](docs/demo-guide.md) ·

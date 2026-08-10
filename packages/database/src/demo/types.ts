@@ -38,6 +38,8 @@ export interface DemoCampaign {
   channel: string;
   spend: number;
   leadsGenerated: number;
+  /** Top-of-funnel traffic (sessions/visits) attributed to the campaign. */
+  visits: number;
 }
 
 /** All records scoped to a single tenant (organization). */

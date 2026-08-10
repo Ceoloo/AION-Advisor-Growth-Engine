@@ -10,7 +10,7 @@
  *     Advisor #2   →  ClientConfig  ├─→  the SAME AION engine
  *     Advisor #3   →  ClientConfig  ┘
  */
-import type { IndustryVertical, Role } from '@aion/types';
+import type { FunnelSnapshot, IndustryVertical, Role } from '@aion/types';
 
 /** Where the client is in the AION build/approval lifecycle. */
 export const CLIENT_APPROVAL_STATUSES = [
@@ -125,6 +125,15 @@ export interface ClientConfig {
     approvedBy?: string;
     approvedAt?: string;
   };
+
+  /**
+   * The pre-AION funnel baseline ("BEFORE AION"). Captured from the advisor's
+   * prior 30 days so the dashboard can show BEFORE vs AFTER lift — the numbers
+   * that become the testimonial. Optional: absent for a brand-new advisor.
+   */
+  baseline?: FunnelSnapshot;
+  /** Label for the live pilot period ("AFTER AION"), e.g. "Pilot — first 30 days". */
+  pilotPeriodLabel?: string;
 
   /** True for a seeded demo tenant (safe, synthetic data). */
   isDemo: boolean;

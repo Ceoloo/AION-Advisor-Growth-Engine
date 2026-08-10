@@ -434,12 +434,15 @@ function buildOrg(config: ClientConfig, baseSeed: number): DemoOrg {
   });
 
   // --- Campaigns (5) ---------------------------------------------------------
+  // `visits` is top-of-funnel traffic; the visit→lead ratio varies by channel
+  // (paid social converts coldest, referrals warmest) so source math is realistic.
+  const cmpLeads = (frac: number) => Math.max(1, Math.round(leadCount * frac));
   const campaigns: DemoCampaign[] = [
-    { id: `${organizationId}_cmp0`, organizationId, name: 'Meta Retirement Webinar', channel: 'paid_social', spend: 2400, leadsGenerated: Math.round(leadCount * 0.3) },
-    { id: `${organizationId}_cmp1`, organizationId, name: 'Google Search — Medicare', channel: 'search', spend: 3100, leadsGenerated: Math.round(leadCount * 0.25) },
-    { id: `${organizationId}_cmp2`, organizationId, name: 'Referral Program', channel: 'referral', spend: 500, leadsGenerated: Math.round(leadCount * 0.2) },
-    { id: `${organizationId}_cmp3`, organizationId, name: 'Local Seminar Series', channel: 'event', spend: 1800, leadsGenerated: Math.round(leadCount * 0.15) },
-    { id: `${organizationId}_cmp4`, organizationId, name: 'Email Nurture — Q3', channel: 'email', spend: 300, leadsGenerated: Math.round(leadCount * 0.1) },
+    { id: `${organizationId}_cmp0`, organizationId, name: 'Meta Retirement Webinar', channel: 'paid_social', spend: 2400, leadsGenerated: cmpLeads(0.3), visits: cmpLeads(0.3) * 25 },
+    { id: `${organizationId}_cmp1`, organizationId, name: 'Google Search — Medicare', channel: 'search', spend: 3100, leadsGenerated: cmpLeads(0.25), visits: cmpLeads(0.25) * 13 },
+    { id: `${organizationId}_cmp2`, organizationId, name: 'Referral Program', channel: 'referral', spend: 500, leadsGenerated: cmpLeads(0.2), visits: cmpLeads(0.2) * 3 },
+    { id: `${organizationId}_cmp3`, organizationId, name: 'Local Seminar Series', channel: 'event', spend: 1800, leadsGenerated: cmpLeads(0.15), visits: cmpLeads(0.15) * 5 },
+    { id: `${organizationId}_cmp4`, organizationId, name: 'Email Nurture — Q3', channel: 'email', spend: 300, leadsGenerated: cmpLeads(0.1), visits: cmpLeads(0.1) * 8 },
   ];
 
   // --- Inject the scripted Marcus Johnson pilot journey (config-driven) -------

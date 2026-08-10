@@ -308,3 +308,29 @@ export interface DashboardMetrics {
   renewalOpportunities: number;
   referralActivity: number;
 }
+
+/**
+ * A point-in-time snapshot of the full revenue funnel over a period. Used for
+ * both the computed pilot ("AFTER AION") numbers and the recorded pre-AION
+ * baseline ("BEFORE AION"). Counts are absolute; rates are derived elsewhere.
+ */
+export interface FunnelSnapshot {
+  /** Human-readable window, e.g. "Prior 30 days (before AION)". */
+  periodLabel: string;
+  /** Optional attribution/notes for how the numbers were captured. */
+  note?: string;
+  traffic: number;
+  leads: number;
+  qualified: number;
+  appointments: number;
+  showed: number;
+  consultations: number;
+  opportunities: number;
+  clients: number;
+  /** Verified (issued/closed) revenue for the period, in dollars. */
+  verifiedRevenue: number;
+  /** Marketing spend for the period, in dollars (for CPL/CPQL). */
+  spend?: number;
+  /** Average first-response time in minutes. */
+  responseTimeMinutes?: number;
+}

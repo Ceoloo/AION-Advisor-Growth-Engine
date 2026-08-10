@@ -490,9 +490,15 @@ importers:
       '@aion/ai':
         specifier: workspace:*
         version: link:../packages/ai
+      '@aion/analytics':
+        specifier: workspace:*
+        version: link:../packages/analytics
       '@aion/auth':
         specifier: workspace:*
         version: link:../packages/auth
+      '@aion/clients':
+        specifier: workspace:*
+        version: link:../packages/clients
       '@aion/compliance':
         specifier: workspace:*
         version: link:../packages/compliance

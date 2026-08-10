@@ -201,6 +201,33 @@ not forking. See `docs/client-configuration.md`.
   Tests: 14 clients unit + 3 e2e; database seed tests updated for the new second
   tenant. Client bundle still free of Airtable identifiers.
 
+## KPI layer — the revenue funnel (Baseline vs Pilot)
+
+Reframes the dashboard around the only question Ben cares about: did the pilot
+produce more qualified opportunities and revenue? See `docs/kpis.md`.
+
+- **Funnel engine** (`@aion/analytics/funnel.ts`): `computeFunnel()` builds the
+  full nine-stage funnel — Traffic → Leads → Qualified → Appointments → Showed →
+  Consultations → Opportunities → Clients → Verified Revenue — as a monotonic
+  subset chain, plus the named conversion rates (lead→qualified, qualified→booked,
+  booked→show, show→next-step, lead→client), first-response time, cost per lead /
+  qualified lead, pipeline value, verified revenue, and source + campaign
+  conversion. `compareFunnel()` produces the **BEFORE vs AFTER** comparison
+  (per-stage delta + lift, rate deltas, response-time change). 11 unit tests.
+- **`FunnelSnapshot`** added to `@aion/types`; demo campaigns gained top-of-funnel
+  `visits` (channel-specific visit→lead ratios) so source/campaign math is real.
+- **Baseline in ClientConfig**: each advisor carries a pre-AION `baseline`
+  snapshot (`@aion/clients`); Ben's and Maria's are calibrated so the pilot shows
+  credible lift (Ben: 24→33 leads, 9→22 qualified, 4→11 booked, 240min→5min
+  response).
+- **Dashboard rework**: headline conversion-rate cards, the full funnel with step
+  conversions (`FunnelChart`), the **Baseline vs Pilot** table (`BaselineVsPilot`
+  — the testimonial-maker), economics (pipeline value, verified revenue, CPL,
+  CPQL), and source + campaign conversion tables. New read-only `/api/metrics`.
+- **Docs**: `docs/kpis.md`. Tests: 11 analytics funnel unit + 3 e2e (funnel +
+  baseline + `/api/metrics`); smoke updated. Client bundle still free of Airtable
+  identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

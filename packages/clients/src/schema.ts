@@ -40,6 +40,22 @@ const brandAssets = z.object({
   extra: z.record(z.string()).optional(),
 });
 
+const funnelSnapshot = z.object({
+  periodLabel: z.string().min(1),
+  note: z.string().optional(),
+  traffic: z.number().min(0),
+  leads: z.number().min(0),
+  qualified: z.number().min(0),
+  appointments: z.number().min(0),
+  showed: z.number().min(0),
+  consultations: z.number().min(0),
+  opportunities: z.number().min(0),
+  clients: z.number().min(0),
+  verifiedRevenue: z.number().min(0),
+  spend: z.number().min(0).optional(),
+  responseTimeMinutes: z.number().min(0).optional(),
+});
+
 export const ClientConfigSchema = z
   .object({
     clientId: z
@@ -75,6 +91,8 @@ export const ClientConfigSchema = z
       approvedBy: z.string().optional(),
       approvedAt: z.string().optional(),
     }),
+    baseline: funnelSnapshot.optional(),
+    pilotPeriodLabel: z.string().optional(),
     isDemo: z.boolean(),
     demoLeadVolume: z.number().int().min(0),
     seedOffset: z.number().int(),

@@ -216,3 +216,23 @@ export type ConsentType = (typeof CONSENT_TYPES)[number];
 
 export const CONSENT_STATUSES = ['granted', 'revoked', 'pending', 'expired'] as const;
 export type ConsentStatus = (typeof CONSENT_STATUSES)[number];
+
+// --- Funnel / KPIs -----------------------------------------------------------
+
+/**
+ * The full revenue funnel Ben cares about, in order:
+ * Traffic → Leads → Qualified → Appointments → Showed → Consultations →
+ * Opportunities → Clients → Verified Revenue.
+ */
+export const FUNNEL_STAGES = [
+  'traffic',
+  'leads',
+  'qualified',
+  'appointments',
+  'showed',
+  'consultations',
+  'opportunities',
+  'clients',
+  'verifiedRevenue',
+] as const;
+export type FunnelStageKey = (typeof FUNNEL_STAGES)[number];

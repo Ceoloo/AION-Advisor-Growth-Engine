@@ -5,7 +5,8 @@ test.describe('AION demo smoke journey', () => {
     await page.goto('/dashboard');
     await expect(page.getByText('Demo mode')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Executive Dashboard' })).toBeVisible();
-    await expect(page.getByText('Total Leads')).toBeVisible();
+    await expect(page.getByText('Lead → Qualified').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Revenue Funnel' })).toBeVisible();
   });
 
   test('leads list navigates to a lead detail page', async ({ page }) => {

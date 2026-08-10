@@ -65,6 +65,25 @@ export const benPeretz: ClientConfig = {
     approvedAt: '2026-01-15T00:00:00.000Z',
   },
 
+  // BEFORE AION — Ben's prior 30 days, captured at pilot kickoff. The dashboard
+  // compares this against the live pilot funnel to show the lift.
+  baseline: {
+    periodLabel: 'Prior 30 days (before AION)',
+    note: 'Manual intake, spreadsheet follow-up, ~4-hour first response.',
+    traffic: 300,
+    leads: 24,
+    qualified: 9,
+    appointments: 4,
+    showed: 2,
+    consultations: 1,
+    opportunities: 1,
+    clients: 0,
+    verifiedRevenue: 0,
+    spend: 8100,
+    responseTimeMinutes: 240,
+  },
+  pilotPeriodLabel: 'Pilot to date (with AION)',
+
   isDemo: true,
   demoLeadVolume: 32,
   seedOffset: 0,
