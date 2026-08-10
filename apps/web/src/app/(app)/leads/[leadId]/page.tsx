@@ -4,6 +4,8 @@ import { Card, ScoreBadge, Badge, ComplianceAlert } from '@aion/ui';
 import { SCORE_BAND_META } from '@aion/ui';
 import { getLeadDetail } from '@/lib/demo';
 import { AiBriefing } from '@/components/ai-briefing';
+import { PreCallBriefView } from '@/components/pre-call-brief';
+import { preCallBriefForLead, leadHasBooking } from '@/lib/precall-brief';
 import { QuickActions } from '@/components/quick-actions';
 import { formatDateTime, formatDate } from '@/lib/format';
 import type { ScoreCategory } from '@aion/types';
@@ -49,6 +51,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ lea
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Left column: qualification, score, timeline */}
         <div className="space-y-4 lg:col-span-2">
+          {/* Pre-call Advisor Brief — shown once the lead has a booked appointment. */}
+          {leadHasBooking(detail) && <PreCallBriefView brief={preCallBriefForLead(detail)} />}
+
           {/* Recommended next action */}
           {result && (
             <Card className="border-brand-blue/30 bg-brand-blue/5 p-5">

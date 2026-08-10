@@ -297,6 +297,29 @@ through. See `docs/observability.md`.
 - **Docs**: `docs/observability.md`. Tests: 8 observability unit + 2 e2e. Client
   bundle still free of Airtable identifiers.
 
+## Pre-Call Advisor Brief (lead generation → lead preparation)
+
+Makes the advisor brief operationally useful: when a lead books, the advisor
+gets a prep sheet answering the eight questions they ask before a call. See
+`docs/advisor-brief.md`.
+
+- **`@aion/ai/precall-brief.ts`** (new, deterministic — no LLM):
+  `generatePreCallBrief` maps a lead's qualification data to the eight sections —
+  who is this, why did they come, what problem did they identify, score, primary
+  concern, urgency (from `urgencyScore`), what to ask (missing info + vertical
+  prompts), and what to avoid assuming (open objections + a standing compliance
+  guardrail). Always `requiresAdvisorReview`. `renderPreCallBriefText` for
+  logs/delivery. Resilient with sparse data. 12 unit tests.
+- **Booking is the trigger**: the native `book` and scorecard
+  `booking-confirmed` routes emit a `workflow_execution` observability event
+  ("Pre-Call Advisor Brief generated on booking"), so the step shows on the
+  System Health board.
+- **Delivery**: a Pre-Call Advisor Brief card on the lead detail page (once the
+  lead has a booked appointment), a 🧾 Pre-Call Brief link on every appointments
+  row, and read-only `GET /api/leads/:id/brief`.
+- **Docs**: `docs/advisor-brief.md`. Tests: 12 unit + 4 e2e. Client bundle still
+  free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

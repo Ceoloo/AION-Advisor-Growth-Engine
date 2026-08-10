@@ -46,6 +46,14 @@ export default function AppointmentsPage() {
         <td className="px-4 py-3">
           <Badge tone={STATUS_TONE[a.status] ?? 'neutral'}>{a.status.replace(/_/g, ' ')}</Badge>
         </td>
+        <td className="px-4 py-3">
+          <Link
+            href={`/leads/${a.leadId}#pre-call-brief`}
+            className="whitespace-nowrap rounded-md border border-brand-blue/30 bg-brand-blue/10 px-2 py-1 text-xs font-medium text-blue-200 hover:bg-brand-blue/20"
+          >
+            🧾 Pre-Call Brief
+          </Link>
+        </td>
       </tr>
     );
   };
@@ -78,6 +86,7 @@ export default function AppointmentsPage() {
                   <th className="px-4 py-2 font-medium">When</th>
                   <th className="px-4 py-2 font-medium">Advisor</th>
                   <th className="px-4 py-2 font-medium">Status</th>
+                  <th className="px-4 py-2 font-medium">Prep</th>
                 </tr>
               </thead>
               <tbody>

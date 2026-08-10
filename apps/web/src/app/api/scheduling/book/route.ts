@@ -3,6 +3,7 @@ import { BookingRequestSchema, generateSlots, pickRoundRobin } from '@aion/sched
 import { logger } from '@aion/shared';
 import { getStore } from '@/lib/demo';
 import { addBooking, busyForCalendar, countsByMember } from '@/lib/scheduling-store';
+import { recordOps } from '@/lib/observability';
 
 const DAY_MS = 86_400_000;
 
@@ -69,6 +70,26 @@ export async function POST(request: Request) {
     created,
     startsAt: slot.startsAt,
   });
+
+  if (created) {
+    recordOps({
+      component: 'booking',
+      type: 'booking_event',
+      status: 'success',
+      retryCount: 1,
+      message: `${calendar.name} booked (round-robin: ${memberName})`,
+      correlationId: booking.bookingId,
+    });
+    // BOOKED → the advisor pre-call brief is generated.
+    recordOps({
+      component: 'workflows',
+      type: 'workflow_execution',
+      status: 'success',
+      retryCount: 1,
+      message: 'Pre-Call Advisor Brief generated on booking',
+      correlationId: booking.bookingId,
+    });
+  }
 
   return NextResponse.json({
     ok: true,

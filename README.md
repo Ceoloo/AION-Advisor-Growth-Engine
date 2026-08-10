@@ -126,6 +126,7 @@ Start with [`docs/architecture.md`](docs/architecture.md) (system diagrams), the
 [`measurement-framework`](docs/measurement-framework.md) ·
 [`launch-gate`](docs/launch-gate.md) ·
 [`observability`](docs/observability.md) ·
+[`advisor-brief`](docs/advisor-brief.md) ·
 [`environments`](docs/environments.md) ·
 [`deployment`](docs/deployment.md) ·
 [`demo-guide`](docs/demo-guide.md) ·

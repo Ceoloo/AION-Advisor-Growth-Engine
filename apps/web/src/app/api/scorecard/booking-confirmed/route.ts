@@ -33,6 +33,15 @@ export async function POST(request: Request) {
     message: 'Discovery booking confirmed',
     correlationId: body.submissionId,
   });
+  // BOOKED → the advisor pre-call brief is generated (deterministic, always).
+  recordOps({
+    component: 'workflows',
+    type: 'workflow_execution',
+    status: 'success',
+    retryCount: 1,
+    message: 'Pre-Call Advisor Brief generated on booking',
+    correlationId: body.submissionId,
+  });
 
   // Gated by the resolved runtime mode: demo writes nothing; pilot/production
   // only write once the gated activation checks pass (see @aion/shared/mode).
