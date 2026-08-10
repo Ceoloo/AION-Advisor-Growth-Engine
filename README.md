@@ -4,6 +4,8 @@
 
 AION is a modular intelligence and experience layer on top of **GoHighLevel**. GoHighLevel remains the CRM, communications, pipeline, calendar, and workflow backend; AION adds AI lead qualification, industry-specific sales workflows, analytics, document collection, advisor tooling, integrations, and a branded, white-label-ready client experience.
 
+> 🧩 **This is a multi-tenant product, not one advisor's app.** Ben Peretz is **Client Zero** — his branding, messaging, checkup, CRM mapping, workflows, and compliance are **tenant configuration** ([`@aion/clients`](packages/clients)), not permanent product logic. Onboarding the next advisor is *Create Client → Select Vertical → Configure ICP → Offer → Scorecard → GHL → Compliance → Launch* (`/onboarding`), not building another app. Two design lines make this safe: a deliberate [rules-vs-AI boundary](docs/decision-boundary.md) (rules decide, AI describes) and gated [runtime modes](docs/environments.md) + [launch gate](docs/launch-gate.md).
+
 > ⚠️ **This is an MVP skeleton.** It runs fully offline on seeded demo data (no external services required). Legal and compliance review is required before any production deployment. See [`docs/compliance-considerations.md`](docs/compliance-considerations.md).
 
 ---
@@ -122,6 +124,7 @@ Start with [`docs/architecture.md`](docs/architecture.md) (system diagrams), the
 [`security`](docs/security.md) ·
 [`compliance-considerations`](docs/compliance-considerations.md) ·
 [`client-configuration`](docs/client-configuration.md) ·
+[`decision-boundary`](docs/decision-boundary.md) ·
 [`kpis`](docs/kpis.md) ·
 [`measurement-framework`](docs/measurement-framework.md) ·
 [`launch-gate`](docs/launch-gate.md) ·

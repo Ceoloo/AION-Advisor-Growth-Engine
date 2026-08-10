@@ -30,6 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/compliance', label: 'Compliance', icon: '🛡️', group: 'Operations' },
   { href: '/integrations', label: 'Integrations', icon: '🔌', group: 'Operations' },
   { href: '/client', label: 'Client Config', icon: '🧩', group: 'Operations' },
+  { href: '/create-client', label: 'Create Client', icon: '➕', group: 'Operations' },
   { href: '/mode', label: 'Runtime Mode', icon: '🚦', group: 'Operations' },
   { href: '/launch', label: 'Launch Readiness', icon: '🚀', group: 'Operations' },
   { href: '/system-health', label: 'System Health', icon: '🩺', group: 'Operations' },

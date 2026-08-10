@@ -26,6 +26,11 @@ export function getPrimaryClient(): ClientConfig {
   return CLIENT_CONFIGS[0]!;
 }
 
+/** "Client Zero" — the reference client new advisors are cloned from (Ben). */
+export function getClientZero(): ClientConfig {
+  return CLIENT_CONFIGS.find((c) => c.isClientZero) ?? getPrimaryClient();
+}
+
 export function listClients(): ClientConfig[] {
   return CLIENT_CONFIGS;
 }

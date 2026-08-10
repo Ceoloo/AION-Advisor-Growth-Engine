@@ -91,6 +91,7 @@ export const ClientConfigSchema = z
       approvedBy: z.string().optional(),
       approvedAt: z.string().optional(),
     }),
+    isClientZero: z.boolean().optional(),
     baseline: funnelSnapshot.optional(),
     pilotPeriodLabel: z.string().optional(),
     launchApprovals: z

@@ -142,6 +142,13 @@ export interface ClientConfig {
   /** Label for the live pilot period ("AFTER AION"), e.g. "Pilot — first 30 days". */
   pilotPeriodLabel?: string;
 
+  /**
+   * Marks the reference/first client — "Client Zero". Ben is Client Zero: his
+   * configuration is the template every subsequent advisor is onboarded from,
+   * not permanent product logic. Exactly one client should set this.
+   */
+  isClientZero?: boolean;
+
   /** True for a seeded demo tenant (safe, synthetic data). */
   isDemo: boolean;
   /** Number of demo leads to generate for this tenant. */

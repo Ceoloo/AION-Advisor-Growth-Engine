@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Card, Badge } from '@aion/ui';
 import {
   getActiveClient,
@@ -45,6 +46,7 @@ function ClientCard({ config, active }: { config: ClientConfig; active: boolean 
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-white">{config.advisor.name}</h3>
+            {config.isClientZero && <Badge tone="gold">Client Zero</Badge>}
             {active && <Badge tone="blue">Active</Badge>}
             {isClientLiveApproved(config) ? (
               <Badge tone="green">Live-approved</Badge>
@@ -117,6 +119,14 @@ export default function ClientConfigPage() {
       <PageHeader
         title="Client Configuration"
         description="Every advisor is a ClientConfig on the same AION engine. Onboarding a new advisor is adding a config — not forking the product."
+        actions={
+          <Link
+            href="/create-client"
+            className="rounded-lg bg-brand-blue px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-bright"
+          >
+            + Create Client
+          </Link>
+        }
       />
 
       <Card className="mb-4 p-4">

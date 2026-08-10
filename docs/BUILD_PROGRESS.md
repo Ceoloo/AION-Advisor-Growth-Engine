@@ -320,6 +320,31 @@ gets a prep sheet answering the eight questions they ask before a call. See
 - **Docs**: `docs/advisor-brief.md`. Tests: 12 unit + 4 e2e. Client bundle still
   free of Airtable identifiers.
 
+## Decision boundary + Client Zero onboarding
+
+Two strategic guardrails: keep the deterministic engine primary, and treat the
+repo as a product (Ben is Client Zero), not one advisor's app.
+
+- **Rules-vs-AI boundary, enforced** (`@aion/shared/decision-boundary.ts`): a
+  `CAPABILITY_ENGINE` manifest declaring rules for scoring, qualification,
+  routing, compliance, consent, lifecycle, and KPI calculations; AI for
+  summarization, personalization, briefs, recommendations, content variations,
+  sales-call prep, and pattern detection ("rules decide, AI describes"). An
+  architecture test (`tests/integration/decision-boundary.test.ts`) asserts the
+  rule-based packages make **no LLM calls** (never import `@aion/ai`/the
+  gateway), so the boundary can't silently regress. See `docs/decision-boundary.md`.
+- **Ben is Client Zero**: `isClientZero` on `ClientConfig` (+ `getClientZero()`),
+  README/docs reframed from "Ben's system" to "AION Engine — Ben is Client Zero"
+  (his branding/messaging/checkup/CRM/workflows/compliance are tenant config).
+- **Onboarding wizard** (`/create-client`): an eight-step flow — Create Client →
+  Vertical → ICP → Offer → Scorecard → GHL → Compliance → Launch — that
+  assembles a `ClientConfig` draft and validates it via `POST /api/clients/draft`
+  against the same Zod schema every registered client passes, reporting launch
+  readiness. "+ Create Client" entry from `/client`; Client Zero badge on Ben.
+- **Docs**: `docs/decision-boundary.md`, updated `client-configuration.md`.
+  Tests: 4 manifest unit + 7 architecture + 5 onboarding e2e. Client bundle still
+  free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

@@ -95,6 +95,8 @@ export const benPeretz: ClientConfig = {
   },
   pilotPeriodLabel: 'Pilot to date (with AION)',
 
+  // Ben is Client Zero — the reference configuration new advisors are cloned from.
+  isClientZero: true,
   isDemo: true,
   demoLeadVolume: 32,
   seedOffset: 0,
