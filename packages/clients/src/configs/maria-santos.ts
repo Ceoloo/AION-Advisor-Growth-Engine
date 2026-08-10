@@ -62,6 +62,18 @@ export const mariaSantos: ClientConfig = {
   approval: {
     status: 'pending_approval',
   },
+  // Mid-onboarding: disclosure, messaging, and data handling still pending →
+  // LIVE CAMPAIGN = BLOCKED until compliance signs off.
+  launchApprovals: {
+    branding: { approved: true, approvedBy: 'Maria Santos', approvedAt: '2026-08-01T00:00:00.000Z' },
+    biography: { approved: true, approvedBy: 'Maria Santos', approvedAt: '2026-08-01T00:00:00.000Z' },
+    licensing: { approved: true, approvedBy: 'Compliance', approvedAt: '2026-08-03T00:00:00.000Z' },
+    disclosure: { approved: false, note: 'CMS-sensitive Medicare disclosures under review.' },
+    messaging: { approved: false, note: 'Awaiting opt-out language sign-off.' },
+    data_handling: { approved: false },
+    crm: { approved: true, approvedBy: 'Maria Santos', approvedAt: '2026-08-04T00:00:00.000Z' },
+    calendar: { approved: true, approvedBy: 'Maria Santos', approvedAt: '2026-08-04T00:00:00.000Z' },
+  },
 
   baseline: {
     periodLabel: 'Prior 30 days (before AION)',

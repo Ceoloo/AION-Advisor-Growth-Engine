@@ -11,6 +11,8 @@ export type AppErrorCode =
   | 'rate_limited'
   | 'tenant_violation'
   | 'demo_blocked'
+  | 'launch_blocked'
+  | 'live_campaign_blocked'
   | 'integration_error'
   | 'internal';
 
@@ -23,6 +25,8 @@ const STATUS_BY_CODE: Record<AppErrorCode, number> = {
   rate_limited: 429,
   tenant_violation: 403,
   demo_blocked: 403,
+  launch_blocked: 403,
+  live_campaign_blocked: 403,
   integration_error: 502,
   internal: 500,
 };

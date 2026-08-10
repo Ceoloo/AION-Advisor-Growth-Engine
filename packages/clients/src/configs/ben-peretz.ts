@@ -64,6 +64,17 @@ export const benPeretz: ClientConfig = {
     approvedBy: 'Ben Peretz',
     approvedAt: '2026-01-15T00:00:00.000Z',
   },
+  // Every critical approval complete → LAUNCH ELIGIBLE.
+  launchApprovals: {
+    branding: { approved: true, approvedBy: 'Ben Peretz', approvedAt: '2026-01-10T00:00:00.000Z' },
+    biography: { approved: true, approvedBy: 'Ben Peretz', approvedAt: '2026-01-10T00:00:00.000Z' },
+    licensing: { approved: true, approvedBy: 'Compliance', approvedAt: '2026-01-12T00:00:00.000Z' },
+    disclosure: { approved: true, approvedBy: 'Compliance', approvedAt: '2026-01-12T00:00:00.000Z' },
+    messaging: { approved: true, approvedBy: 'Ben Peretz', approvedAt: '2026-01-13T00:00:00.000Z' },
+    data_handling: { approved: true, approvedBy: 'Compliance', approvedAt: '2026-01-13T00:00:00.000Z' },
+    crm: { approved: true, approvedBy: 'Ben Peretz', approvedAt: '2026-01-14T00:00:00.000Z' },
+    calendar: { approved: true, approvedBy: 'Ben Peretz', approvedAt: '2026-01-14T00:00:00.000Z' },
+  },
 
   // BEFORE AION — Ben's prior 30 days, captured at pilot kickoff. The dashboard
   // compares this against the live pilot funnel to show the lift.

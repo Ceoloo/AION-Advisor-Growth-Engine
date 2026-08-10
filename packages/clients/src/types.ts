@@ -10,7 +10,7 @@
  *     Advisor #2   →  ClientConfig  ├─→  the SAME AION engine
  *     Advisor #3   →  ClientConfig  ┘
  */
-import type { FunnelSnapshot, IndustryVertical, Role } from '@aion/types';
+import type { FunnelSnapshot, IndustryVertical, LaunchApprovalState, Role } from '@aion/types';
 
 /** Where the client is in the AION build/approval lifecycle. */
 export const CLIENT_APPROVAL_STATUSES = [
@@ -125,6 +125,13 @@ export interface ClientConfig {
     approvedBy?: string;
     approvedAt?: string;
   };
+  /**
+   * Per-item launch approvals (branding, biography, licensing, disclosure,
+   * messaging, data handling, CRM, calendar). Every critical item must be
+   * approved before live campaigns are permitted — enforced by the launch gate
+   * in @aion/compliance, not just displayed. Missing keys count as not approved.
+   */
+  launchApprovals?: LaunchApprovalState;
 
   /**
    * The pre-AION funnel baseline ("BEFORE AION"). Captured from the advisor's

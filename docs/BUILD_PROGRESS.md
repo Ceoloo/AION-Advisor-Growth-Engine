@@ -250,6 +250,31 @@ presented as a measured or verified fact. See `docs/measurement-framework.md`.
   the tiers (+2); proposal e2e asserts all three tiers render. Client bundle
   still free of Airtable identifiers.
 
+## Launch gate — compliance as application logic
+
+Turns the pre-launch approval checklist into a hard, server-enforced gate: live
+campaigns are refused until every critical approval is complete. See
+`docs/launch-gate.md`.
+
+- **Canonical items** in `@aion/types`: `LAUNCH_APPROVAL_ITEMS` (branding,
+  biography, licensing, disclosure, messaging, data handling, CRM, calendar —
+  all critical), `LaunchApprovalKey`, `LaunchApprovalState`.
+- **Gate logic** in `@aion/compliance/launch-gate.ts`: `evaluateLaunchReadiness`,
+  `assertLaunchEligible`, and the combined `evaluateLiveCampaignGate` /
+  `assertLiveCampaignAllowed` — live campaigns require BOTH every critical
+  approval AND the runtime `allowLiveCampaigns` capability (production only).
+  New `launch_blocked` / `live_campaign_blocked` (403) error codes. 18 tests.
+- **Per-client approvals** on `ClientConfig` (`launchApprovals`): Ben fully
+  approved (Launch Eligible), Maria mid-onboarding (disclosure/messaging/data
+  handling pending → blocked).
+- **Enforcement**: `POST /api/campaigns/launch` calls the gate server-side and
+  returns 403 with reasons when blocked — no UI override. Read-only `/api/launch`
+  status; `/launch` governance page (two-gate status, server-driven checklist,
+  a live "attempt to launch" button that surfaces the server refusal); the
+  campaigns page shows a blocked control linking to launch readiness.
+- **Docs**: `docs/launch-gate.md`. Tests: 18 launch-gate unit + 5 e2e. Client
+  bundle still free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

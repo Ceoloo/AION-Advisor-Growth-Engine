@@ -31,6 +31,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/integrations', label: 'Integrations', icon: '🔌', group: 'Operations' },
   { href: '/client', label: 'Client Config', icon: '🧩', group: 'Operations' },
   { href: '/mode', label: 'Runtime Mode', icon: '🚦', group: 'Operations' },
+  { href: '/launch', label: 'Launch Readiness', icon: '🚀', group: 'Operations' },
   { href: '/team', label: 'Team', icon: '👥', group: 'Operations' },
   { href: '/settings', label: 'Settings', icon: '⚙️', group: 'Operations' },
 ];

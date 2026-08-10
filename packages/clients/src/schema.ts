@@ -4,7 +4,7 @@
  * engine. The schema mirrors ./types.ts exactly.
  */
 import { z } from 'zod';
-import { INDUSTRY_VERTICALS, ROLES } from '@aion/types';
+import { INDUSTRY_VERTICALS, LAUNCH_APPROVAL_ITEMS, ROLES } from '@aion/types';
 import {
   CALENDAR_PROVIDERS,
   CLIENT_APPROVAL_STATUSES,
@@ -93,6 +93,17 @@ export const ClientConfigSchema = z
     }),
     baseline: funnelSnapshot.optional(),
     pilotPeriodLabel: z.string().optional(),
+    launchApprovals: z
+      .record(
+        z.enum(LAUNCH_APPROVAL_ITEMS.map((i) => i.key) as [string, ...string[]]),
+        z.object({
+          approved: z.boolean(),
+          approvedBy: z.string().optional(),
+          approvedAt: z.string().optional(),
+          note: z.string().optional(),
+        }),
+      )
+      .optional(),
     isDemo: z.boolean(),
     demoLeadVolume: z.number().int().min(0),
     seedOffset: z.number().int(),

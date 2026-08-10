@@ -1,10 +1,17 @@
+import Link from 'next/link';
 import { Card, Badge } from '@aion/ui';
+import { getCapabilities } from '@aion/shared';
+import { getActiveClient } from '@aion/clients';
+import { evaluateLiveCampaignGate } from '@aion/compliance';
 import { PageHeader } from '@/components/page-header';
 import { getActiveOrg } from '@/lib/demo';
 import { formatCurrency } from '@/lib/format';
 
+export const dynamic = 'force-dynamic';
+
 export default function CampaignsPage() {
   const org = getActiveOrg();
+  const gate = evaluateLiveCampaignGate(getActiveClient().launchApprovals ?? {}, getCapabilities());
 
   return (
     <>
@@ -12,9 +19,19 @@ export default function CampaignsPage() {
         title="Campaigns"
         description="Acquisition sources and spend. Cost-per-lead is derived from live attribution."
         actions={
-          <button className="rounded-lg bg-brand-blue px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-bright">
-            + New campaign
-          </button>
+          gate.allowed ? (
+            <button className="rounded-lg bg-brand-blue px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-bright">
+              + Launch live campaign
+            </button>
+          ) : (
+            <Link
+              href="/launch"
+              title={gate.reasons.join(' ')}
+              className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-200 hover:bg-red-500/15"
+            >
+              ⛔ Live campaigns blocked — review launch readiness
+            </Link>
+          )
         }
       />
 

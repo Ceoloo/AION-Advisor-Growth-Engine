@@ -252,3 +252,35 @@ export type FunnelStageKey = (typeof FUNNEL_STAGES)[number];
  */
 export const MEASUREMENT_TIERS = ['observed', 'modeled', 'verified'] as const;
 export type MeasurementTier = (typeof MEASUREMENT_TIERS)[number];
+
+// --- Launch gate (compliance approvals) --------------------------------------
+
+/**
+ * The critical pre-launch approvals. EVERY item must be approved before live
+ * campaigns are permitted — this is enforced in application logic (see
+ * @aion/compliance/launch-gate), not just tracked on a checklist. Missing any
+ * critical approval means LIVE CAMPAIGN = BLOCKED.
+ */
+export const LAUNCH_APPROVAL_ITEMS = [
+  { key: 'branding', label: 'Branding approved', detail: 'Logo, colors, practice name, and funnel copy signed off.', critical: true },
+  { key: 'biography', label: 'Biography approved', detail: 'Advisor bio, headshot, and credentials finalized.', critical: true },
+  { key: 'licensing', label: 'Licensing verified', detail: 'Producer licenses verified for each state and product line in scope.', critical: true },
+  { key: 'disclosure', label: 'Disclosure approved', detail: 'Disclosures and suitability language approved by compliance.', critical: true },
+  { key: 'messaging', label: 'Messaging approved', detail: 'SMS/email templates and cadences approved; opt-out language confirmed.', critical: true },
+  { key: 'data_handling', label: 'Data handling approved', detail: 'Consent capture, retention, and access controls reviewed.', critical: true },
+  { key: 'crm', label: 'CRM approved', detail: 'CRM account, pipelines, and field mapping configured and verified.', critical: true },
+  { key: 'calendar', label: 'Calendar approved', detail: 'Booking calendar, availability, and confirmation flow tested.', critical: true },
+] as const;
+
+export type LaunchApprovalKey = (typeof LAUNCH_APPROVAL_ITEMS)[number]['key'];
+
+/** One approval's recorded state. */
+export interface LaunchApprovalRecord {
+  approved: boolean;
+  approvedBy?: string;
+  approvedAt?: string;
+  note?: string;
+}
+
+/** Per-client approval state, keyed by approval item. Missing keys = not approved. */
+export type LaunchApprovalState = Partial<Record<LaunchApprovalKey, LaunchApprovalRecord>>;
