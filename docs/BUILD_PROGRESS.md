@@ -120,6 +120,29 @@ external auto-sends. See `docs/scorecard.md`.
   sample, results→plan handoff, booked confirmation). Totals: 39 scorecard unit
   tests, 27 Playwright e2e. Client bundle still free of Airtable identifiers.
 
+## Native scheduling (GoHighLevel-style calendars)
+
+A native calendar layer — round-robin/collective/individual calendars, a shared
+team calendar, public booking links, and shared tasks. See `docs/scheduling.md`.
+
+- **`@aion/scheduling`** (new pure package): calendar/availability/slot/task
+  types; deterministic `generateSlots()` (weekly hours, slot size, buffers,
+  min-notice, busy-aware, timezone offset) and `pickRoundRobin()` (least-busy).
+  11 unit tests.
+- **Demo data**: three calendars per org (round-robin Advisor Growth Review,
+  collective Client Strategy, individual Intro) + shared tasks; store gains
+  `listCalendars` / `findCalendarBySlug`.
+- **Runtime overlay** (`apps/web/src/lib/scheduling-store.ts`): process-local,
+  in-memory bookings + task changes over the read-only demo data — demo-safe.
+- **APIs**: `/api/scheduling/slots`, `/api/scheduling/book` (round-robin,
+  idempotent, slot re-verified), `/api/tasks` (+ `/status`).
+- **UI**: `/calendar` (shared 7-day team view, color-coded by owner),
+  `/calendars` (booking links + copy), public `/book/[slug]`, `/tasks` (board).
+  New "Scheduling" nav group.
+- Tests: 11 scheduling unit + 6 e2e (calendars, team calendar, public booking
+  round-robin, not-found, tasks, mobile). Totals now: 11 scheduling unit tests,
+  33 Playwright e2e across the app.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

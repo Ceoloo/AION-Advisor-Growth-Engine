@@ -18,6 +18,7 @@ import type {
   Membership,
   Task,
 } from '@aion/types';
+import type { Calendar, SharedTask } from '@aion/scheduling';
 
 /** An activity-timeline entry combining human and automated actions. */
 export interface TimelineEvent {
@@ -61,6 +62,8 @@ export interface DemoOrg {
   consents: ConsentRecord[];
   campaigns: DemoCampaign[];
   timeline: TimelineEvent[];
+  calendars: Calendar[];
+  sharedTasks: SharedTask[];
 }
 
 export interface DemoWorld {

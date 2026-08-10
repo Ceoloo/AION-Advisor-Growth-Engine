@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@aion/ai": "workspace:*",
+    "@aion/scheduling": "workspace:*",
     "@aion/shared": "workspace:*",
     "@aion/types": "workspace:*"
   },

@@ -3,7 +3,7 @@ export interface NavItem {
   href: string;
   label: string;
   icon: string;
-  group: 'Pilot' | 'Overview' | 'Sales' | 'Engagement' | 'Operations';
+  group: 'Pilot' | 'Overview' | 'Sales' | 'Scheduling' | 'Engagement' | 'Operations';
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -18,6 +18,9 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/pipeline', label: 'Pipeline', icon: '🧭', group: 'Sales' },
   { href: '/appointments', label: 'Appointments', icon: '📅', group: 'Sales' },
   { href: '/clients', label: 'Clients', icon: '🤝', group: 'Sales' },
+  { href: '/calendar', label: 'Team Calendar', icon: '🗓️', group: 'Scheduling' },
+  { href: '/calendars', label: 'Booking Calendars', icon: '🔗', group: 'Scheduling' },
+  { href: '/tasks', label: 'Shared Tasks', icon: '☑️', group: 'Scheduling' },
   { href: '/conversations', label: 'Conversations', icon: '💬', group: 'Engagement' },
   { href: '/campaigns', label: 'Campaigns', icon: '📣', group: 'Engagement' },
   { href: '/workflows', label: 'Workflows', icon: '⚙️', group: 'Engagement' },
@@ -30,4 +33,4 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: '⚙️', group: 'Operations' },
 ];
 
-export const NAV_GROUPS = ['Pilot', 'Overview', 'Sales', 'Engagement', 'Operations'] as const;
+export const NAV_GROUPS = ['Pilot', 'Overview', 'Sales', 'Scheduling', 'Engagement', 'Operations'] as const;

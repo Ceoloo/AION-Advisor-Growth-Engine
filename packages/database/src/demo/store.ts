@@ -58,6 +58,20 @@ export class DemoStore {
       advisor: org.profiles.find((p) => p.id === lead.assignedAdvisorId) ?? null,
     };
   }
+
+  /** Calendars for a tenant. */
+  listCalendars(organizationId: string) {
+    return this.org(organizationId)?.calendars ?? [];
+  }
+
+  /** Resolve a public booking-link slug to its calendar + owning org. */
+  findCalendarBySlug(slug: string) {
+    for (const org of this.world.orgs) {
+      const calendar = org.calendars.find((c) => c.slug === slug && c.isActive);
+      if (calendar) return { calendar, org };
+    }
+    return null;
+  }
 }
 
 let singleton: DemoStore | null = null;

@@ -39,6 +39,7 @@ import type {
   Task,
 } from '@aion/types';
 import { seededRandom } from '@aion/shared';
+import type { Calendar, SharedTask, WeeklyAvailability } from '@aion/scheduling';
 import { PIPELINE_TEMPLATES } from '../pipelines.js';
 import type { DemoCampaign, DemoOrg, DemoWorld, TimelineEvent } from './types.js';
 
@@ -474,6 +475,8 @@ function buildOrg(spec: OrgSpec): DemoOrg {
     timeline.unshift(...m.timeline);
   }
 
+  const scheduling = buildScheduling(organizationId, spec.slug, profiles);
+
   return {
     organization,
     settings: makeSettings(organizationId),
@@ -495,6 +498,8 @@ function buildOrg(spec: OrgSpec): DemoOrg {
     consents,
     campaigns,
     timeline,
+    calendars: scheduling.calendars,
+    sharedTasks: scheduling.sharedTasks,
   };
 }
 
@@ -740,6 +745,115 @@ function buildMarcusJohnson(
   ];
 
   return { contact, lead, score: leadScore, qualification, consents, opportunity, appointment, messages, note, task, timeline };
+}
+
+// --- Calendars + shared tasks (native scheduling layer) ----------------------
+
+const BUSINESS_WEEK: WeeklyAvailability = {
+  1: [{ start: '09:00', end: '17:00' }],
+  2: [{ start: '09:00', end: '17:00' }],
+  3: [{ start: '09:00', end: '17:00' }],
+  4: [{ start: '09:00', end: '17:00' }],
+  5: [{ start: '09:00', end: '15:00' }],
+};
+
+function buildScheduling(
+  organizationId: string,
+  slug: string,
+  profiles: Profile[],
+): { calendars: Calendar[]; sharedTasks: SharedTask[] } {
+  const memberIds = profiles.slice(0, 3).map((p) => p.id);
+  const base = { organizationId, tzOffsetMinutes: -240, timezoneLabel: 'America/New_York (ET)', isActive: true };
+
+  const calendars: Calendar[] = [
+    {
+      ...base,
+      id: `${organizationId}_cal_growth`,
+      name: 'Advisor Growth Review',
+      slug: `${slug}-growth-review`,
+      type: 'round_robin',
+      description: 'Round-robin 15-minute review — the next available team member is assigned automatically.',
+      memberIds,
+      slotMinutes: 30,
+      bufferMinutes: 10,
+      minNoticeHours: 12,
+      meetingLocation: 'Google Meet (link sent on confirmation)',
+      availability: BUSINESS_WEEK,
+    },
+    {
+      ...base,
+      id: `${organizationId}_cal_strategy`,
+      name: 'Client Strategy Session',
+      slug: `${slug}-strategy`,
+      type: 'collective',
+      description: 'Collective calendar — a slot is only offered when everyone required is free.',
+      memberIds: memberIds.slice(0, 2),
+      slotMinutes: 45,
+      bufferMinutes: 15,
+      minNoticeHours: 24,
+      meetingLocation: 'Office or video',
+      availability: { 1: [{ start: '10:00', end: '15:00' }], 3: [{ start: '10:00', end: '15:00' }] },
+    },
+    {
+      ...base,
+      id: `${organizationId}_cal_intro`,
+      name: `Intro with ${profiles[0]?.fullName ?? 'Advisor'}`,
+      slug: `${slug}-intro`,
+      type: 'individual',
+      description: 'One-on-one introductory call.',
+      memberIds: memberIds.slice(0, 1),
+      slotMinutes: 20,
+      bufferMinutes: 5,
+      minNoticeHours: 4,
+      meetingLocation: 'Phone',
+      availability: BUSINESS_WEEK,
+    },
+  ];
+
+  const sharedTasks: SharedTask[] = [
+    {
+      id: `${organizationId}_stask0`,
+      organizationId,
+      title: 'Confirm this week’s Advisor Growth Review bookings',
+      assigneeId: profiles[1]?.id ?? null,
+      dueAt: iso(-1, 17),
+      status: 'open',
+      createdAt: iso(2, 9),
+      updatedAt: iso(1, 9),
+    },
+    {
+      id: `${organizationId}_stask1`,
+      organizationId,
+      title: 'Prepare prep briefs for tomorrow’s calls',
+      assigneeId: profiles[0]?.id ?? null,
+      dueAt: iso(0, 12),
+      status: 'in_progress',
+      createdAt: iso(1, 9),
+      updatedAt: iso(0, 9),
+    },
+    {
+      id: `${organizationId}_stask2`,
+      organizationId,
+      title: 'Follow up with no-shows from last week',
+      assigneeId: profiles[2]?.id ?? null,
+      dueAt: iso(-2, 16),
+      status: 'open',
+      createdAt: iso(3, 9),
+      updatedAt: iso(2, 9),
+    },
+    {
+      id: `${organizationId}_stask3`,
+      organizationId,
+      title: 'Update the team availability for next month',
+      assigneeId: null,
+      dueAt: iso(-7, 15),
+      status: 'done',
+      createdAt: iso(6, 9),
+      updatedAt: iso(4, 9),
+    },
+  ];
+
+  return { calendars, sharedTasks };
 }
 
 /** Generate the full demo world: a rich primary tenant + a second tenant. */

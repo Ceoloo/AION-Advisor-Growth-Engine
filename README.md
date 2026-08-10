@@ -52,6 +52,7 @@ packages/
   ghl/           GoHighLevel client, services, webhooks, mocks
   ai/            AI gateway, schemas, scoring, qualification, engines
   scorecard/     Advisor Conversion Scorecard — question bank, deterministic scoring, findings, brief
+  scheduling/    Native calendars — availability/slot engine + round-robin assignment
   workflows/     Workflow engine + JSON definitions
   analytics/     Metric aggregation
   integrations/  Pluggable adapter registry (GHL live, others mocked)
