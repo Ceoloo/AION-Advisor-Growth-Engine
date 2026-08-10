@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { computeScore, extractSignals, qualifyLead, templateForVertical } from '@aion/ai';
 import { getGateway } from '@/lib/ai';
+import { recordOps } from '@/lib/observability';
 
 const BodySchema = z.object({
   vertical: z.enum(['financial_advisor', 'health_insurance']),
@@ -26,6 +27,21 @@ export async function POST(request: Request) {
 
   const gateway = getGateway();
   const qual = await qualifyLead(gateway, { vertical, answers });
+
+  // AI is fail-safe: a schema/provider failure degrades to the rule-based
+  // result rather than failing the request — but we still record the fault.
+  recordOps(
+    qual.ok
+      ? { component: 'ai', type: 'ai_call', status: 'success', retryCount: 1, message: 'Lead qualification' }
+      : {
+          component: 'ai',
+          type: 'ai_call',
+          status: 'failure',
+          retryCount: 1,
+          message: 'AI qualification failed — used rule-based fallback',
+          error: 'error' in qual ? String(qual.error) : 'AI output invalid',
+        },
+  );
 
   return NextResponse.json({
     ok: true,

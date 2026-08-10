@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getCapabilities, isDemoMode, logger } from '@aion/shared';
 import { createAirtableClient } from '@aion/integrations';
 import { INTENT_POINTS } from '@aion/scorecard';
+import { recordOps } from '@/lib/observability';
 
 /**
  * Records a confirmed discovery booking as an Intent event ("Discovery Booked").
@@ -24,6 +25,14 @@ export async function POST(request: Request) {
   const body = parsed.data;
   const log = logger.child({ component: 'scorecard-booking-confirmed' });
   log.info('discovery booked', { submissionId: body.submissionId });
+  recordOps({
+    component: 'booking',
+    type: 'booking_event',
+    status: 'success',
+    retryCount: 1,
+    message: 'Discovery booking confirmed',
+    correlationId: body.submissionId,
+  });
 
   // Gated by the resolved runtime mode: demo writes nothing; pilot/production
   // only write once the gated activation checks pass (see @aion/shared/mode).

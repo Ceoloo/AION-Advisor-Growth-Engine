@@ -275,6 +275,28 @@ campaigns are refused until every critical approval is complete. See
 - **Docs**: `docs/launch-gate.md`. Tests: 18 launch-gate unit + 5 e2e. Client
   bundle still free of Airtable identifiers.
 
+## Observability — AION System Health
+
+Structured operational telemetry so failures surface before real leads flow
+through. See `docs/observability.md`.
+
+- **`@aion/observability`** (new package): `OpsEvent` model (component, type,
+  status success/retry/failure/dead_letter/suppressed, retryCount, error,
+  correlationId), a process-local ring-buffer `OpsRecorder`, and
+  `computeSystemHealth` — a deterministic worst-wins 🟢/🟡/🔴 roll-up across the
+  eight subsystems (GHL, Airtable, Scorecard, Workflows, Booking, AI, Analytics,
+  Compliance). Demo seed keeps the board alive and green (incl. a recovered-on-
+  retry CRM sync and a demo-suppressed outbound). 8 unit tests.
+- **Wired at the real boundaries** (`recordOps`, mirrored to the structured
+  logger): CRM sync (`scorecard-sync` success/failure/suppressed), webhook
+  ingestion (accepted/bad-signature/invalid-payload), booking confirmation, and
+  AI qualification (success / AI-failure→rule-based fallback).
+- **Surfaces**: `/system-health` page (overall banner, 8-component light board
+  with retry/failure/dead-letter counts, and a structured recent-event log) +
+  read-only `/api/system-health`; "System Health" nav item.
+- **Docs**: `docs/observability.md`. Tests: 8 observability unit + 2 e2e. Client
+  bundle still free of Airtable identifiers.
+
 ## Technical decisions
 
 - **Demo-first architecture.** The whole platform runs offline via the mock AI provider and in-memory `DemoStore`, so it's demonstrable without any external service. The data-access boundary (`apps/web/src/lib/demo.ts`) is the single seam where live Supabase repositories swap in.

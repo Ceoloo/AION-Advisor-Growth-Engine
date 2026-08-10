@@ -10,6 +10,7 @@
  */
 import { getCapabilities, isDemoMode, logger } from '@aion/shared';
 import { createAirtableClient } from '@aion/integrations';
+import { recordOps } from '@/lib/observability';
 import {
   generateAdvisorBrief,
   renderAdvisorBriefText,
@@ -63,6 +64,14 @@ export async function syncScorecardSubmission(
   if (!caps.allowProductionCrmWrites) {
     log.info('crm writes disabled for current mode — no production records written', {
       mode: caps.mode,
+    });
+    recordOps({
+      component: 'airtable',
+      type: 'crm_sync',
+      status: 'suppressed',
+      retryCount: 0,
+      message: `CRM sync suppressed — writes disabled in ${caps.mode} mode`,
+      correlationId: submission.submissionId,
     });
     return { demo: isDemoMode(), wrote: false };
   }
@@ -148,10 +157,27 @@ export async function syncScorecardSubmission(
       leadCreated: lead.created,
       responseDeduped: response.deduped,
     });
+    recordOps({
+      component: 'airtable',
+      type: 'crm_sync',
+      status: 'success',
+      retryCount: 1,
+      message: 'Scorecard lead + response synced to CRM',
+      correlationId: submission.submissionId,
+    });
     return { demo: false, wrote: true, leadId: lead.id, responseDeduped: response.deduped };
   } catch (err) {
     log.error('airtable sync failed (non-blocking)', {
       error: err instanceof Error ? err.message : String(err),
+    });
+    recordOps({
+      component: 'airtable',
+      type: 'crm_sync',
+      status: 'failure',
+      retryCount: 1,
+      message: 'Scorecard CRM sync failed',
+      error: err instanceof Error ? err.message : String(err),
+      correlationId: submission.submissionId,
     });
     return { demo: false, wrote: false, error: 'sync_failed' };
   }

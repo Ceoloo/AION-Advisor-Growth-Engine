@@ -55,7 +55,8 @@ packages/
   scheduling/    Native calendars — availability/slot engine + round-robin assignment
   clients/       Client configuration layer — ClientConfig type, schema, registry, resolver
   workflows/     Workflow engine + JSON definitions
-  analytics/     Metric aggregation
+  analytics/     Metric aggregation + revenue funnel / baseline-vs-pilot KPIs
+  observability/ Ops events + recorder + System Health roll-up
   integrations/  Pluggable adapter registry (GHL live, others mocked)
   compliance/    Audit, consent, disclosures, demo guard
 infrastructure/
@@ -124,6 +125,7 @@ Start with [`docs/architecture.md`](docs/architecture.md) (system diagrams), the
 [`kpis`](docs/kpis.md) ·
 [`measurement-framework`](docs/measurement-framework.md) ·
 [`launch-gate`](docs/launch-gate.md) ·
+[`observability`](docs/observability.md) ·
 [`environments`](docs/environments.md) ·
 [`deployment`](docs/deployment.md) ·
 [`demo-guide`](docs/demo-guide.md) ·

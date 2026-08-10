@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { parseWebhook, verifyWebhookSignature, webhookIdempotencyKey } from '@aion/ghl';
 import { loadEnv, logger } from '@aion/shared';
 import { recordWebhook } from '@/lib/webhook-store';
+import { recordOps } from '@/lib/observability';
 
 /**
  * GoHighLevel webhook ingestion.
@@ -23,6 +24,14 @@ export async function POST(request: Request) {
     verified = verifyWebhookSignature(raw, signature, env.GHL_WEBHOOK_SECRET);
     if (!verified) {
       log.warn('rejected webhook: bad signature');
+      recordOps({
+        component: 'ghl',
+        type: 'webhook',
+        status: 'failure',
+        retryCount: 1,
+        message: 'Webhook rejected',
+        error: 'Invalid signature',
+      });
       return NextResponse.json({ ok: false, error: 'invalid_signature' }, { status: 401 });
     }
   }
@@ -31,6 +40,14 @@ export async function POST(request: Request) {
   try {
     envelope = parseWebhook(raw);
   } catch {
+    recordOps({
+      component: 'ghl',
+      type: 'webhook',
+      status: 'failure',
+      retryCount: 1,
+      message: 'Webhook rejected',
+      error: 'Invalid payload',
+    });
     return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 });
   }
 
@@ -45,6 +62,14 @@ export async function POST(request: Request) {
   // Real processing would: normalize → upsert contact/lead → enqueue New Lead
   // workflow. Kept as a log in the skeleton (demo mode never mutates prod).
   log.info('webhook accepted', { key, type: envelope.type, verified });
+  recordOps({
+    component: 'ghl',
+    type: 'webhook',
+    status: 'success',
+    retryCount: 1,
+    message: `Webhook accepted: ${envelope.type}${verified ? ' (verified)' : ''}`,
+    correlationId: key,
+  });
 
   return NextResponse.json({
     ok: true,

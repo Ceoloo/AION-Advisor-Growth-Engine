@@ -11,6 +11,7 @@ const nextConfig = {
     '@aion/database',
     '@aion/ghl',
     '@aion/integrations',
+    '@aion/observability',
     '@aion/scheduling',
     '@aion/scorecard',
     '@aion/shared',

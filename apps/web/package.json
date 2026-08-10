@@ -21,6 +21,7 @@
     "@aion/database": "workspace:*",
     "@aion/ghl": "workspace:*",
     "@aion/integrations": "workspace:*",
+    "@aion/observability": "workspace:*",
     "@aion/scheduling": "workspace:*",
     "@aion/scorecard": "workspace:*",
     "@aion/shared": "workspace:*",
