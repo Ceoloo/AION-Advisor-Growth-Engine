@@ -1,0 +1,39 @@
+{
+  "generated": "2026-08-12",
+  "schedulers": [
+    {"type": "vercel_cron", "schedule": "*/15 * * * *", "target": "/api/health", "live_effect": "none", "evidence": "infrastructure/deployment/vercel.json:7-12"},
+    {"type": "worker_setInterval", "schedule": "60s", "target": "debug log", "intended": "poll public.sync_jobs / due reminders", "live_effect": "none", "evidence": "apps/worker/src/index.ts:53"}
+  ],
+  "orchestration_absent": ["github_actions","pg_cron","aws_eventbridge","aws_lambda","aws_sqs","aws_sns","supabase_scheduled_functions","openclaw","agent_loops","live_n8n","live_make","live_zapier"],
+  "workflow_engine": {
+    "file": "packages/workflows/src/engine.ts",
+    "features": ["ordered steps","per-step retry (maxAttempts/backoffMs)","human approval gate (requiresApproval)"],
+    "handlers_file": "apps/worker/src/handlers.ts",
+    "handlers_real_side_effect": ["generate_advisor_brief (AI call)"],
+    "handlers_noop": ["normalize_data","check_duplicate","ghl_upsert_contact","assign_lead_source","start_ai_qualification","calculate_lead_score","add_to_pipeline","notify_advisor","start_nurture","confirm_appointment","send_calendar_details","send_intake_questionnaire","schedule_reminder"]
+  },
+  "workflow_definitions": [
+    {"key": "new_lead", "trigger": "lead.created", "file": "packages/workflows/src/definitions/new-lead.json", "live_effect": "none", "intended_consumer_of": "GHL webhook (not wired)"},
+    {"key": "appointment_booking", "trigger": "booking", "file": "definitions/appointment-booking.json", "live_effect": "AI advisor brief only"},
+    {"key": "no_show", "trigger": "no_show", "file": "definitions/no-show.json", "live_effect": "none"},
+    {"key": "post_appointment", "trigger": "post_appointment", "file": "definitions/post-appointment.json", "live_effect": "none"},
+    {"key": "referral", "trigger": "referral", "file": "definitions/referral.json", "live_effect": "none"},
+    {"key": "renewal", "trigger": "renewal", "file": "definitions/renewal.json", "live_effect": "none"},
+    {"key": "scorecard_nurture", "trigger": "scorecard", "file": "definitions/scorecard-nurture.json", "live_effect": "none"}
+  ],
+  "live_workflow": {
+    "name": "scorecard_funnel",
+    "trigger": "visitor on /advisor-scorecard",
+    "steps": [
+      "track events -> POST /api/scorecard/event (log)",
+      "POST /api/scorecard/submit -> computeScorecard",
+      "syncScorecardSubmission -> Airtable Lead+Response+IntentEvent (non-demo)",
+      "booking_clicked -> Booking Page Viewed (Airtable)",
+      "booking confirmed -> POST /api/scorecard/booking-confirmed -> Discovery Booked (Airtable)"
+    ],
+    "database_objects": [],
+    "external_system": "Airtable base appezuvIZLMwAFnFB",
+    "final_output": "Airtable Lead + Response + up to 3 Intent Events; personalized report",
+    "canonical_target": "UNRESOLVED"
+  }
+}

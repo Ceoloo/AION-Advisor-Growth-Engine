@@ -1,0 +1,87 @@
+{
+  "generated": "2026-08-12",
+  "external_systems": [
+    {
+      "external_system": "Airtable",
+      "repository": "AION-Advisor-Growth-Engine",
+      "file": "packages/integrations/src/airtable.ts",
+      "function": "AirtableClient.upsertLead/createScorecardResponse/createIntentEvent",
+      "direction": "OUT_WRITE",
+      "data": "Leads, Scorecard Responses, Intent & Attribution Events",
+      "supabase_object": null,
+      "canonical_system": "UNRESOLVED (AION Revenue/Intent)",
+      "auth_env": "AIRTABLE_ACCESS_TOKEN",
+      "demo_gated": true,
+      "tier": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "external_system": "GoHighLevel",
+      "repository": "AION-Advisor-Growth-Engine",
+      "file": "packages/ghl/*; apps/web/src/app/api/webhooks/ghl/route.ts",
+      "function": "verifyWebhookSignature/parseWebhook (inbound); client.ts (outbound, mocked)",
+      "direction": "IN_WEBHOOK + OUT_dormant",
+      "data": "contact/opportunity webhook envelopes",
+      "supabase_object": "intended webhook_events/external_object_mappings",
+      "canonical_system": "GoHighLevel (declared CRM system-of-record)",
+      "auth_env": "GHL_WEBHOOK_SECRET,GHL_CLIENT_ID,GHL_CLIENT_SECRET,GHL_REDIRECT_URI",
+      "demo_gated": false,
+      "tier": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "external_system": "OpenAI/Anthropic",
+      "repository": "AION-Advisor-Growth-Engine",
+      "file": "packages/ai/providers/{openai,anthropic,mock}.ts; gateway.ts",
+      "function": "AIGateway.generate; qualifyLead; generateAdvisorBrief",
+      "direction": "OUT",
+      "data": "lead answers, summaries",
+      "supabase_object": null,
+      "canonical_system": "AION AI layer",
+      "auth_env": "OPENAI_API_KEY,ANTHROPIC_API_KEY,AI_MODEL",
+      "demo_gated": "provider default mock (no call)",
+      "tier": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "external_system": "Booking provider (Cal.com/Calendly, URL only)",
+      "repository": "AION-Advisor-Growth-Engine",
+      "file": "packages/integrations/src/booking.ts",
+      "function": "resolveAdvisorGrowthReviewBooking",
+      "direction": "OUT_REDIRECT",
+      "data": "booking intent",
+      "canonical_system": "AION Intent (Discovery Booked)",
+      "auth_env": "ADVISOR_GROWTH_REVIEW_URL",
+      "tier": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "external_system": "Vercel",
+      "repository": "AION-Advisor-Growth-Engine",
+      "file": "infrastructure/deployment/vercel.json",
+      "direction": "PLATFORM + IN_CRON",
+      "data": "deploy + /api/health cron",
+      "tier": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "external_system": "registry_placeholders",
+      "repository": "AION-Advisor-Growth-Engine",
+      "file": "packages/integrations/src/registry.ts",
+      "direction": "MOCK",
+      "data": ["twilio","telnyx","sendgrid","mailgun","stripe","square","docusign","pandadoc","google_calendar","outlook_calendar","google_drive","dropbox","clearbit","apollo","zapier","make","n8n","carrier_api","quote_platform"],
+      "tier": 2,
+      "confidence": "HIGH"
+    },
+    {
+      "external_system": "Sentry/PostHog",
+      "repository": "AION-Advisor-Growth-Engine",
+      "file": ".env.example; packages/shared/src/env.ts",
+      "direction": "NAME_ONLY",
+      "data": "env var names only, no client code",
+      "tier": 3,
+      "confidence": "HIGH"
+    }
+  ],
+  "absent_grep0": ["Slack","Discord","Notion","HubSpot(client)","AWS(EventBridge/Lambda/SQS/SNS)","OpenClaw","Hermes","agent_runtime"]
+}

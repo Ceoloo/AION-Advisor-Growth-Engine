@@ -1,0 +1,69 @@
+{
+  "generated": "2026-08-12",
+  "mission": "P0-D Edge Function + Repository Consumer Trace",
+  "modified_production_systems": false,
+  "repositories_in_scope": [
+    {
+      "repository": "Ceoloo/AION-Advisor-Growth-Engine",
+      "path": "/home/user/AION-Advisor-Growth-Engine",
+      "git_remote": "https://github.com/Ceoloo/AION-Advisor-Growth-Engine",
+      "branch": "claude/aion-p0d-forensics-ui8i8u",
+      "commit": "549ed6de64a874624f16d7b0657dc71314f98635",
+      "framework": "Next.js App Router + Turborepo (pnpm workspaces)",
+      "runtime": "Node>=20 (Vercel serverless / Node HTTP / worker)",
+      "package_manager": "pnpm@10.33.0",
+      "language": ["TypeScript", "SQL", "JSON"],
+      "entrypoints": [
+        "apps/web/src/app/api/**/route.ts",
+        "apps/api/src/index.ts",
+        "apps/worker/src/index.ts",
+        "scripts/seed-demo.ts"
+      ],
+      "edge_functions": [],
+      "edge_function_note": "No supabase/functions directory; edge compute is Next.js API routes",
+      "api_routes_web": [
+        "GET /api/health",
+        "POST /api/ai/advisor-brief",
+        "POST /api/ai/qualify",
+        "GET /api/demo-control",
+        "POST /api/demo-control",
+        "POST /api/scorecard/submit",
+        "POST /api/scorecard/event",
+        "POST /api/scorecard/brief",
+        "POST /api/scorecard/booking-confirmed",
+        "POST /api/webhooks/ghl"
+      ],
+      "api_routes_standalone": [
+        "GET /health",
+        "POST /leads/score",
+        "POST /ai/qualify",
+        "POST /webhooks/ghl"
+      ],
+      "workers": ["apps/worker/src/index.ts"],
+      "cron_jobs": [
+        {"type": "vercel_cron", "schedule": "*/15 * * * *", "target": "/api/health", "evidence": "infrastructure/deployment/vercel.json:7-12"},
+        {"type": "setInterval", "schedule": "60s", "target": "debug log (intended sync_jobs poll)", "evidence": "apps/worker/src/index.ts:53"}
+      ],
+      "webhooks": [
+        {"direction": "inbound", "source": "GoHighLevel", "endpoint": "/api/webhooks/ghl", "behavior": "verify+dedupe+log"},
+        {"direction": "inbound_return", "source": "booking_provider", "endpoint": "/api/scorecard/booking-confirmed"}
+      ],
+      "database_code": {
+        "migrations": "infrastructure/migrations/0001-0010 (~61 tables, 4 functions, RLS)",
+        "client": "packages/database/src/client.ts (STUB, not wired)",
+        "runtime_store": "packages/database/src/demo/* (in-memory)",
+        "live_supabase_queries": 0
+      },
+      "external_integrations_live": ["Airtable", "GoHighLevel(inbound webhook)", "OpenAI/Anthropic(optional)", "Vercel"],
+      "external_integrations_mock": ["twilio","telnyx","sendgrid","mailgun","stripe","square","docusign","pandadoc","google_calendar","outlook_calendar","google_drive","dropbox","clearbit","apollo","zapier","make","n8n","carrier_api","quote_platform"],
+      "observability_name_only": ["Sentry","PostHog"],
+      "agent_systems": [],
+      "deployment_targets": ["Vercel", "Supabase", "Docker(local)"]
+    }
+  ],
+  "repositories_out_of_scope": [
+    {"repository": "Ceoloo/aion-company-os", "status": "not_in_workspace", "traced": false},
+    {"repository": "Ceoloo/AION-Revenue-Factory", "status": "not_in_workspace", "traced": false},
+    {"repository": "Ceoloo/AION-VPS-Empire-Command.V1", "status": "not_in_workspace", "traced": false}
+  ]
+}

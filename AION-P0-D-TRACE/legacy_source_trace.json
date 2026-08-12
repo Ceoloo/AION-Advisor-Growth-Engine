@@ -1,0 +1,102 @@
+{
+  "generated": "2026-08-12",
+  "legacy_sources": [
+    {
+      "category": "EVENTS",
+      "source_name": "aion_events / aion_events_v2 / operational_events / memory_events / event_memory.events",
+      "present_in_repo": false,
+      "evidence": "grep=0 whole repo",
+      "writers": [], "readers": [], "dependent_functions": [], "dependent_workflows": [], "dependent_external": [],
+      "canonical_target": "N/A (canonical, absent here)",
+      "active": false, "source_of_truth": false, "projection_or_cache": false, "duplicate": false,
+      "safe_to_redirect": null, "safe_to_read_only": null,
+      "migration_class": "N/A", "trace_status": "absent"
+    },
+    {
+      "category": "EVENTS",
+      "source_name": "public.funnel_events",
+      "present_in_repo": true,
+      "evidence": "infrastructure/migrations/0008_analytics.sql:5",
+      "writers": [], "readers": [], "dependent_functions": [], "dependent_workflows": [], "dependent_external": [],
+      "canonical_target": "UNRESOLVED",
+      "active": false, "source_of_truth": false, "projection_or_cache": "intended_projection", "duplicate": "overlaps_airtable_intent",
+      "safe_to_redirect": false, "safe_to_read_only": true,
+      "migration_class": "UNRESOLVED", "trace_status": "dormant"
+    },
+    {
+      "category": "EVENTS",
+      "source_name": "public.webhook_events",
+      "present_in_repo": true,
+      "evidence": "0007_integrations.sql:21; live path uses in-memory Map webhook-store.ts",
+      "writers": ["intended /api/webhooks/ghl (actual: in-memory Map)"], "readers": [],
+      "dependent_functions": ["RLS webhook_tenant 0009:64"], "dependent_workflows": ["intended new_lead (not wired)"],
+      "dependent_external": ["GoHighLevel"],
+      "canonical_target": "UNRESOLVED",
+      "active": false, "source_of_truth": false, "projection_or_cache": "in_memory_cache_live", "duplicate": false,
+      "safe_to_redirect": false, "safe_to_read_only": true,
+      "migration_class": "UNRESOLVED", "trace_status": "intended_not_wired"
+    },
+    {
+      "category": "EVENTS_LIVE",
+      "source_name": "Airtable Intent & Attribution Events",
+      "present_in_repo": true,
+      "evidence": "packages/integrations/src/airtable.ts:311-338 (3 writers)",
+      "writers": ["scorecard-sync.ts:126","event/route.ts:48","booking-confirmed:35"],
+      "readers": ["Airtable UI + UNKNOWN Airtable automations"],
+      "dependent_functions": ["AirtableClient.createIntentEvent"], "dependent_workflows": ["scorecard_funnel"],
+      "dependent_external": ["Airtable"],
+      "canonical_target": "UNRESOLVED",
+      "active": true, "source_of_truth": "partial (intent)", "projection_or_cache": false, "duplicate": false,
+      "safe_to_redirect": false, "safe_to_read_only": false,
+      "migration_class": "DUAL_READ", "trace_status": "resolved_live"
+    },
+    {
+      "category": "REVENUE",
+      "source_name": "deals / offers / proposals / customers / revenue_sync_events",
+      "present_in_repo": false,
+      "evidence": "grep=0",
+      "canonical_target": "N/A", "active": false,
+      "migration_class": "N/A", "trace_status": "absent"
+    },
+    {
+      "category": "REVENUE",
+      "source_name": "public.opportunities / revenue_metrics / commissions / messages / campaigns / referrals / policies / renewals",
+      "present_in_repo": true,
+      "evidence": "migrations 0004/0005/0008",
+      "writers": [], "readers": [], "dependent_functions": ["set_updated_at triggers only"], "dependent_workflows": [], "dependent_external": [],
+      "canonical_target": "UNRESOLVED (GHL is declared CRM SoT)",
+      "active": false, "source_of_truth": false, "projection_or_cache": "metrics_are_rollups", "duplicate": "overlaps_airtable",
+      "safe_to_redirect": false, "safe_to_read_only": true,
+      "migration_class": "UNRESOLVED", "trace_status": "dormant"
+    },
+    {
+      "category": "REVENUE_LIVE",
+      "source_name": "Airtable Leads + Scorecard Responses",
+      "present_in_repo": true,
+      "evidence": "airtable.ts:222-308; scorecard-sync.ts",
+      "writers": ["scorecard-sync.ts"], "readers": ["Airtable UI + UNKNOWN automations"],
+      "dependent_functions": ["upsertLead","createScorecardResponse"], "dependent_workflows": ["scorecard_funnel"],
+      "dependent_external": ["Airtable"],
+      "canonical_target": "UNRESOLVED",
+      "active": true, "source_of_truth": "de_facto_for_scorecard_leads", "projection_or_cache": false, "duplicate": "overlaps_supabase_leads",
+      "safe_to_redirect": false, "safe_to_read_only": false,
+      "migration_class": "DUAL_READ", "trace_status": "resolved_live"
+    },
+    {
+      "category": "MEMORY",
+      "source_name": "aion_memories / learning_lessons / aion_lessons / LEEP / event_memory / founder_memory / learning_feedback",
+      "present_in_repo": false,
+      "evidence": "grep=0 each",
+      "canonical_target": "N/A", "active": false,
+      "migration_class": "N/A", "trace_status": "absent"
+    },
+    {
+      "category": "REGISTRY",
+      "source_name": "aion_system_registry / aion_system_registry_sources / aion_producer_consumer_trace / aion_repository_edge_trace",
+      "present_in_repo": false,
+      "evidence": "grep=0 each; repo is unregistered",
+      "canonical_target": "N/A", "active": false,
+      "migration_class": "N/A", "trace_status": "absent"
+    }
+  ]
+}
